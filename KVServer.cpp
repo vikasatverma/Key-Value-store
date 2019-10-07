@@ -1,7 +1,7 @@
 #include "header.hpp"
 
 // writes key value pairs to store ie file
-int ReadFile(const std::string &fname, std::map<std::string, std::string> *m) {
+int restoreFromFile(const std::string &fname, std::map<std::string, std::string> *m) {
     int count = 0;
     if (access(fname.c_str(), R_OK) < 0)
         return -errno;
@@ -43,7 +43,7 @@ int ReadFile(const std::string &fname, std::map<std::string, std::string> *m) {
 }
 
 // reads key value pairs from store ie file
-int WriteFile(const std::string &fname, std::map<std::string, std::string> *m) {
+int dumpToFile(const std::string &fname, std::map<std::string, std::string> *m) {
     int count = 0;
     if (m->empty()) {
         return 0;
@@ -86,7 +86,7 @@ int main() {
     std::string filename = "KVStore_file";
 
     // Read key value store from file
-    ReadFile(filename, &KVStore);
+    restoreFromFile(filename, &KVStore);
 
     // Server runs forever
     while (True) {
@@ -145,7 +145,7 @@ int main() {
 
         strcpy(return_value, response.c_str());
         send(new_socket, return_value, sizeof(return_value), 0);
-        WriteFile(filename, &KVStore);
+        dumpToFile(filename, &KVStore);
     }
 
 
