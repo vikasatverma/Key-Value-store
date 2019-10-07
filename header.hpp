@@ -1,3 +1,9 @@
+
+#define PORT 8080
+#define threadPoolSize 0
+#define numSetsInCache 0
+#define sizeOfSet 0
+
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <cstring>
@@ -13,7 +19,6 @@
 
 #define True 1
 //#define False 0
-#define PORT 8080
 #define delimiter "_||_"
 #define max_key_lenght 256 // 256 Bytes
 #define max_value_lenght (256*1024) // 256 KB

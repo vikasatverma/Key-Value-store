@@ -13,6 +13,7 @@ int checkLenght(const std::string &key, const std::string &value = " ") {
 }
 
 //TODO: Increase capacity of request string to store 256KB
+//TODO: Accept input from the file batchRun.txt
 
 
 int main() {
@@ -56,7 +57,7 @@ int main() {
     cout << sockfd << "\n";
     if (sockfd < 0) {
         printf("\n Socket creation error \n");
-        return -1;
+        exit(-1);
     }
 
     connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
