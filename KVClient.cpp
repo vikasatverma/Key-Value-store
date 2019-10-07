@@ -36,10 +36,13 @@ int main() {
         getline(cin, value);
         checkLenght(key, value);
         request = request_type + delimiter + key + delimiter + value;
-    } else //if (request_type == "DEL")
+    } else if (request_type == "DEL")
     {
         getline(cin, key);
         request = request_type + delimiter + key;
+    } else {
+        cout << "Unknown Error: Undefined request type";
+        exit(-1);
     }
 
     //client connect on this
