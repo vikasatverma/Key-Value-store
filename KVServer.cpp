@@ -1,5 +1,69 @@
 #include "header.hpp"
 
+// writes key value pairs to store ie file
+int ReadFile(const std::string &fname, std::map<std::string, std::string> *m) {
+    int count = 0;
+    if (access(fname.c_str(), R_OK) < 0)
+        return -errno;
+
+    FILE *fp = fopen(fname.c_str(), "r");
+    if (!fp)
+        return -errno;
+
+    m->clear();
+
+    char *buf = nullptr;
+    size_t buflen = 0;
+
+    while (getline(&buf, &buflen, fp) > 0) {
+        char *nl = strchr(buf, '\n');
+        if (nl == nullptr)
+            continue;
+        *nl = 0;
+
+        char *sep = strchr(buf, '=');
+        if (sep == nullptr)
+            continue;
+        *sep = 0;
+        sep++;
+
+        std::string s1 = buf;
+        std::string s2 = sep;
+
+        (*m)[s1] = s2;
+
+        count++;
+    }
+
+    if (buf)
+        free(buf);
+
+    fclose(fp);
+    return count;
+}
+
+// reads key value pairs from store ie file
+int WriteFile(const std::string &fname, std::map<std::string, std::string> *m) {
+    int count = 0;
+    if (m->empty()) {
+        return 0;
+    }
+
+    FILE *fp = fopen(fname.c_str(), "w");
+    if (!fp) {
+        return -errno;
+    }
+
+    for (std::map<std::string, std::string>::iterator it = m->begin(); it != m->end(); it++) {
+        fprintf(fp, "%s=%s\n", it->first.c_str(), it->second.c_str());
+        count++;
+    }
+
+    std::cout << count;
+    fclose(fp);
+    return count;
+}
+
 int main() {
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -19,6 +83,10 @@ int main() {
     //listening on the socket with max no. of waiting connections
     listen(server_fd, 10);
     std::map<std::string, std::string> KVStore;
+    std::string filename = "KVStore_file";
+
+    // Read key value store from file
+    ReadFile(filename, &KVStore);
 
     // Server runs forever
     while (True) {
@@ -40,7 +108,9 @@ int main() {
         }
         // Extract key
         std::string key = strtok(nullptr, delimiter);
-        std::cout << key << '\n';
+        if (debugger_mode) {
+            std::cout << key << '\n';
+        }
         std::string value;
         std::string response;
         std::string error_msg = "Error Message";
@@ -75,6 +145,7 @@ int main() {
 
         strcpy(return_value, response.c_str());
         send(new_socket, return_value, sizeof(return_value), 0);
+        WriteFile(filename, &KVStore);
     }
 
 
