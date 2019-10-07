@@ -1,3 +1,4 @@
+
 #include <bits/stdc++.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -45,6 +46,7 @@ int main(){
     	cout<<buffer<<"\n";
     	//string hello = "Hello from server";
     	send(new_socket, "Hello from server", sizeof("Hello from server"), 0);
+
 
     return 0;
 
