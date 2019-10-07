@@ -4,6 +4,7 @@
 #define numSetsInCache 0
 #define sizeOfSet 0
 
+#define debugger_mode 0
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <cstring>

@@ -54,7 +54,9 @@ int main() {
 
     //creating a socket
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    cout << sockfd << "\n";
+    if (debugger_mode) {
+        cout << sockfd << "\n";
+    }
     if (sockfd < 0) {
         printf("\n Socket creation error \n");
         exit(-1);
@@ -62,10 +64,10 @@ int main() {
 
     connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
 
-
+    if (debugger_mode) {
     cout << request << "\n";
     cout << "###################################### SENDING DATA #############################################\n";
-
+    }
     send(sockfd, request.c_str(), request.size(), 0);
 
 
