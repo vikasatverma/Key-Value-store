@@ -7,7 +7,7 @@ value1
 
 GET
 key1
-<returns value2>
+<returns value1>
 
 DEL
 key1
