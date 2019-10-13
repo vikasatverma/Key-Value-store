@@ -65,6 +65,11 @@ int dumpToFile(const std::string &fname, std::map<std::string, std::string> *m) 
 }
 
 int main() {
+    //Clear response file.
+    FILE *fp = fopen("response.txt", "w");
+    fclose(fp);
+
+
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     struct sockaddr_in address = {address.sin_family = AF_INET,

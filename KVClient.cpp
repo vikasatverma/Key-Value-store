@@ -72,6 +72,15 @@ int main() {
         valread = read(sockfd, buffer, max_buffer_size);
         buffer[valread] = '\0';
         cout << buffer << "\n";
+        FILE *fp = fopen("response.txt", "a");
+        if (!fp) {
+            return -errno;
+        }
+        fprintf(fp, "%s", buffer);
+        fprintf(fp, "\n");
+
+        fclose(fp);
+
     }
 
 }
