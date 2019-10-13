@@ -7,6 +7,7 @@ int restoreFromFile(const std::string &fname, std::map<std::string, std::string>
         return -errno;
 
     FILE *fp = fopen(fname.c_str(), "r");
+
     if (!fp)
         return -errno;
 
@@ -64,6 +65,45 @@ int dumpToFile(const std::string &fname, std::map<std::string, std::string> *m) 
     return count;
 }
 
+//convert xml format to plain text
+std::string xmltoplain(std::string str)
+{
+ std::string request_type;
+ std::string msg_type=str.substr(56,6);
+ std::string key="";
+ std::string value="";
+ int i=0,j=0;
+ if(msg_type=="putreq")
+ {
+    request_type="PUT";
+    for( i=70;str[i]!='<';i++)
+        key+=str[i];
+    key[i]='\0';
+    j=i+14;
+     for( ;str[j]!='<';j++)
+        value+=str[j];
+    value[j]='\0';
+      key=key+delimiter+value;
+ }
+ else if(msg_type=="getreq")
+ {
+    request_type="GET";
+    for( i=70;str[i]!='<';i++)
+        key+=str[i];
+    key[i]='\0';
+ }
+ else
+ {
+   request_type="DEL";
+   for( i=70;str[i]!='<';i++)
+        key+=str[i];
+    key[i]='\0';
+ }
+ request_type = request_type+delimiter+key;
+ //cout<<request_type;
+return request_type;
+}
+
 int main() {
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -71,7 +111,7 @@ int main() {
             address.sin_port = htons(PORT),
             address.sin_addr.s_addr = INADDR_ANY};
     int new_socket, valread;
-    char buffer[max_buffer_size] = {0};
+    char buffer1[max_buffer_size] = {0};
     int opt = 1;
     int addr_len = sizeof(address);
 
@@ -96,13 +136,23 @@ int main() {
             cout << "connection made with client fd==========>" << new_socket << "\n";
         }
         //reading from the socket
-        valread = read(new_socket, buffer, max_buffer_size);
-        buffer[valread] = '\0';
+        valread = read(new_socket, buffer1, max_buffer_size);
+        buffer1[valread] = '\0';
         if (debugger_mode) {
-            cout << buffer << "\n";
+            cout << buffer1<< "\n";
         }
+      
+        std::string buffer="";
+        for(int i=0;i<valread;i++)
+        {
+            buffer=buffer+buffer1[i];
+        }
+        // cout<<buffer;
+        buffer = xmltoplain(buffer);
+       // cout<<buffer;
+        //buffer=buffer.c_str();
         // Extract request type
-        std::string request_type = strtok(buffer, delimiter);
+       std::string request_type = strtok(buffer, delimiter);
         if (debugger_mode) {
         std::cout << request_type << '\n';
         }
