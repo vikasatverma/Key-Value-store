@@ -1,7 +1,7 @@
 #include "header.hpp"
 
 // to convert the plain text to xml format
-std::string plaintoxml(std::string msg_type, std::string key, std::string value = "") {
+std::string toxml(std::string msg_type, std::string key, std::string value = "") {
 
     std::string request = "<?xml version='1.0' encoding='UTF-8'?>\n";
 
@@ -29,28 +29,25 @@ std::string plaintoxml(std::string msg_type, std::string key, std::string value 
 }
 
 //to get back xml format to plain text
+std::string xmltoplain(std::string str) {
 
-std::string xmltoplain(std::string str)
-{
-  int i=0;
-  std::string plain_text="";
-  if(str[64]=='M')
-  {
-  	for(i=72;str[i]!='<';i++)
-    	plain_text +=str[i];
-  }
-  else
-  {
-    for(i=68;str[i]!='<';i++)
-    	plain_text+=str[i];
-    plain_text+=" ";
-    int j=i+14;
-    for(;str[j]!='<';j++)
-    	plain_text+=str[j];
+    int i = 0;
+    std::string plain_text;
+    if (str[64] == 'M') {
+        for (i = 72; str[i] != '<'; i++)
+            plain_text += str[i];
+    } else {
+        for (i = 68; str[i] != '<'; i++)
+            plain_text += str[i];
+        plain_text += " ";
+        int j = i + 14;
+        for (; str[j] != '<'; j++)
+            plain_text += str[j];
 
-  }
-  return plain_text;
+    }
+    return plain_text;
 }
+
 int checkLenght(const std::string &key, const std::string &value = " ") {
     if (key.size() > max_key_lenght) {
         cout << "Oversized key";
@@ -98,7 +95,7 @@ int main() {
         if (debugger_mode) {
             cout << "\n";
         }
-        finalRequest = plaintoxml(request_type, key, value);
+        finalRequest = toxml(request_type, key, value);
         if (debugger_mode) {
             cout << finalRequest << "\n";
             cout << "###################################### "
@@ -127,18 +124,21 @@ int main() {
 
         valread = read(sockfd, buffer1, max_buffer_size);
         buffer1[valread] = '\0';
-        
+
 
         std::string buffer;
         for (int i = 0; i < valread; i++) {
             buffer += (buffer1[i]);
         }
-        
+
+
         std::string buffer2 = xmltoplain(buffer);
 
         char chararr_of_buffer[buffer2.length() + 1];
         strcpy(chararr_of_buffer, buffer2.c_str());
-        cout << chararr_of_buffer<< "\n";
+        if (debugger_mode) {
+            cout << chararr_of_buffer << "\n";
+        }
         FILE *fp = fopen("response.txt", "a");
         if (!fp) {
             return -errno;
