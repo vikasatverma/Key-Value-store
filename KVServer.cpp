@@ -99,7 +99,32 @@ std::string xmltoplain(std::string str) {
     return request_type;
 }
 
+std::string toXML(std::string str)
+{
+std::string response,key="",value="";
+std::string header="<?xml version='1.0' encoding='UTF-8'?>\n";
+std::string msg="<KVMessage type='resp'>\n";
+if(str=="Success"||str=="Error Message"||str=="Does not exist")
+    msg=msg+"<Message>"+str+"</Message>\n";
+else
+{
+    for(int i=0;i<str.length();i++)
+    {
+        if(str[i]!=' ')
+            key+=str[i];
+        else
+        {
+            value=str.substr(i+1);
+            break;
+        }
 
+    }
+
+    msg=msg+"<Key>"+key+"</Key>\n"+"<Value>"+value+"</Value>\n";
+}
+response=header+msg+"</KVMessage>\n";
+return response;
+}
 
 
 int main() {
@@ -201,7 +226,7 @@ int main() {
             response = error_msg;
         }
 
-
+        response= toXML(response);
         strcpy(return_value, response.c_str());
         send(new_socket, return_value, sizeof(return_value), 0);
         dumpToFile(filename, &KVStore);

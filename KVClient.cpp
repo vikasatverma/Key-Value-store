@@ -29,11 +29,28 @@ std::string plaintoxml(std::string msg_type, std::string key, std::string value 
 }
 
 //to get back xml format to plain text
-std::string xmltoplain(std::string request) {
 
-    return request;
+std::string xmltoplain(std::string str)
+{
+  int i=0;
+  std::string plain_text="";
+  if(str[64]=='M')
+  {
+  	for(i=72;str[i]!='<';i++)
+    	plain_text +=str[i];
+  }
+  else
+  {
+    for(i=68;str[i]!='<';i++)
+    	plain_text+=str[i];
+    plain_text+=" ";
+    int j=i+14;
+    for(;str[j]!='<';j++)
+    	plain_text+=str[j];
+
+  }
+  return plain_text;
 }
-
 int checkLenght(const std::string &key, const std::string &value = " ") {
     if (key.size() > max_key_lenght) {
         cout << "Oversized key";
@@ -53,7 +70,7 @@ int main() {
     std::string request_type;
     std::string key;
     std::string value;
-    char buffer[max_buffer_size] = {0};
+    char buffer1[max_buffer_size] = {0};
     int valread;
     std::string finalRequest;
 
@@ -108,15 +125,25 @@ int main() {
 
         send(sockfd, finalRequest.c_str(), finalRequest.size(), 0);
 
-        valread = read(sockfd, buffer, max_buffer_size);
-        buffer[valread] = '\0';
-        cout << buffer << "\n";
+        valread = read(sockfd, buffer1, max_buffer_size);
+        buffer1[valread] = '\0';
+        
 
+        std::string buffer;
+        for (int i = 0; i < valread; i++) {
+            buffer += (buffer1[i]);
+        }
+        
+        std::string buffer2 = xmltoplain(buffer);
+
+        char chararr_of_buffer[buffer2.length() + 1];
+        strcpy(chararr_of_buffer, buffer2.c_str());
+        cout << chararr_of_buffer<< "\n";
         FILE *fp = fopen("response.txt", "a");
         if (!fp) {
             return -errno;
         }
-        fprintf(fp, "%s", buffer);
+        fprintf(fp, "%s", chararr_of_buffer);
         fprintf(fp, "\n");
 
         fclose(fp);
