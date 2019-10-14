@@ -4,7 +4,7 @@
 #define numSetsInCache 0
 #define sizeOfSet 0
 
-#define debugger_mode 1
+#define debugger_mode 0
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <cstring>
@@ -37,7 +37,7 @@ std::vector<std::string> split(const char *str, char c = ' ') {
         while (*str != c && *str)
             str++;
 
-        result.push_back(std::string(begin, str));
+        result.emplace_back(begin, str);
     } while (0 != *str++);
 
     return result;

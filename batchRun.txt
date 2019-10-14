@@ -1,4 +1,3 @@
-GET,key1
 PUT,key2,value2
 DEL,key3
 PUT,key3,value2

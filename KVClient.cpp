@@ -1,5 +1,39 @@
 #include "header.hpp"
 
+// to convert the plain text to xml format
+std::string plaintoxml(std::string msg_type, std::string key, std::string value = "") {
+
+    std::string request = "<?xml version='1.0' encoding='UTF-8'?>\n";
+
+    if (msg_type == "GET") {
+        msg_type = "<KVMessage type='getreq'>\n";
+        key = "<Key>" + key + "</Key>\n";
+    }
+    if (msg_type == "PUT") {
+
+        msg_type = "<KVMessage type='putreq'>\n";
+        key = "<key>" + key + "</Key>\n";
+        value = "<Value>" + value + "</Value>\n";
+        key = key + value;
+
+    }
+    if (msg_type == "DEL") {
+
+        msg_type = "<KVMessage type='delreq'>\n";
+        key = "<Key>" + key + "</Key>\n";
+    }
+
+    request = request + msg_type + key + "</KVMessage>\n";
+
+    return request;
+}
+
+//to get back xml format to plain text
+std::string xmltoplain(std::string request) {
+
+    return request;
+}
+
 int checkLenght(const std::string &key, const std::string &value = " ") {
     if (key.size() > max_key_lenght) {
         cout << "Oversized key";
@@ -17,6 +51,8 @@ int checkLenght(const std::string &key, const std::string &value = " ") {
 int main() {
     std::ifstream infile("batchRun.txt");
     std::string request_type;
+    std::string key;
+    std::string value;
     char buffer[max_buffer_size] = {0};
     int valread;
     std::string finalRequest;
@@ -27,13 +63,16 @@ int main() {
         if (debugger_mode) {
             cout << request[0] << "\t" << request[1] << "\t";
         }
-        finalRequest.append(request[0]).append(delimiter).append(request[1]);
+        request_type = request[0];
+        key = request[1];
+//        finalRequest.append(request[0]).append(delimiter).append(request[1]);
         if (request[0] == "PUT") {
             if (debugger_mode) {
                 cout << request[2];
             }
             checkLenght(request[1], request[2]);
-            finalRequest.append(delimiter).append(request[2]);
+            value = request[2];
+//            finalRequest.append(delimiter).append(request[2]);
         } else if (request[0] != "GET" && request[0] != "DEL") {
             cout << "Unknown Error: Undefined finalRequest type";
             exit(-1);
@@ -42,7 +81,7 @@ int main() {
         if (debugger_mode) {
             cout << "\n";
         }
-
+        finalRequest = plaintoxml(request_type, key, value);
         if (debugger_mode) {
             cout << finalRequest << "\n";
             cout << "###################################### "
@@ -72,6 +111,7 @@ int main() {
         valread = read(sockfd, buffer, max_buffer_size);
         buffer[valread] = '\0';
         cout << buffer << "\n";
+
         FILE *fp = fopen("response.txt", "a");
         if (!fp) {
             return -errno;
