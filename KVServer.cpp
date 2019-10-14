@@ -1,7 +1,24 @@
 #include "header.hpp"
 
-// writes key value pairs to store ie file
-int restoreFromFile(const std::string &fname, std::map<std::string, std::string> *m) {
+// Used by KVStore function such as dumpToFile and RestoreFromFile to decide which file to refer.
+std::string getFilename(std::string key) {
+
+    int fileNumber;
+
+    if (key.length() > 1)
+        fileNumber = int(key[1]) % numSetsInCache;
+    else
+        fileNumber = int(key[0]) % numSetsInCache;
+
+    std::string fname = "KVStore/" + std::to_string(fileNumber);
+
+    return fname;
+}
+
+// To be used to access key value pairs when not found in cache
+// this will load the required file into the temporary map ie m
+int restoreFromFile(std::string &key, std::map<std::string, std::string> *m) {
+    std::string fname = getFilename(key);
     int count = 0;
     if (access(fname.c_str(), R_OK) < 0)
         return -errno;
@@ -42,8 +59,11 @@ int restoreFromFile(const std::string &fname, std::map<std::string, std::string>
     return count;
 }
 
-// reads key value pairs from store ie file
-int dumpToFile(const std::string &fname, std::map<std::string, std::string> *m) {
+// Rewrites the whole file in case of a delete
+int dumpToFile(std::string &key, std::map<std::string, std::string> *m) {
+    std::string fname = getFilename(key);
+
+
     int count = 0;
     if (m->empty()) {
         return 0;
@@ -59,13 +79,53 @@ int dumpToFile(const std::string &fname, std::map<std::string, std::string> *m) 
         count++;
     }
 
-    std::cout << count;
+//    std::cout << count;
     fclose(fp);
     return count;
 }
 
+
+// Inserts key-value pair incrementally
+int putIntoFile(std::string &key, std::string &value) {
+    std::string fname = getFilename(key);
+
+
+    FILE *fp = fopen(fname.c_str(), "a");
+    if (!fp) {
+        return -errno;
+    }
+    fprintf(fp, "%s=%s\n", key.c_str(), value.c_str());
+
+    fclose(fp);
+}
+
+std::string toXML(std::string str) {
+    std::string response, key, value;
+    std::string header = "<?xml version='1.0' encoding='UTF-8'?>\n";
+    std::string msg = "<KVMessage type='resp'>\n";
+    if (str == "Success" || str == "Error Message" || str == "Does not exist")
+        msg = msg + "<Message>" + str + "</Message>\n";
+    else {
+        for (auto i = 0; i < str.length(); i++) {
+            if (str[i] != ' ')
+                key += str[i];
+            else {
+                value = str.substr(i + 1);
+                break;
+            }
+
+        }
+
+        msg = msg + "<Key>" + key + "</Key>\n" + "<Value>" + value + "</Value>\n";
+    }
+    response = header + msg + "</KVMessage>\n";
+    return response;
+}
+
+
+
 //convert xml format to plain text
-std::string xmltoplain(std::string str) {
+std::string fromxml(std::string str) {
     std::string request_type;
     std::string msg_type = str.substr(56, 6);
     std::string key;
@@ -73,65 +133,42 @@ std::string xmltoplain(std::string str) {
     int i = 0, j = 0;
     if (msg_type == "putreq") {
         request_type = "PUT";
-        for (i = 70; str[i] != '<'; i++)
+        for (i = 70; str[i] != '<'; i++) {
             key += str[i];
-//        key[i]='\0';
+        }
         j = i + 14;
-        for (; str[j] != '<'; j++)
+        for (; str[j] != '<'; j++) {
             value += str[j];
-//        value[j]='\0';
+        }
         key = key + delimiter + value;
     } else if (msg_type == "getreq") {
         request_type = "GET";
-        for (i = 70; str[i] != '<'; i++)
+        for (i = 70; str[i] != '<'; i++) {
             key += str[i];
-//        key[i]='\0';
+        }
     } else {
         request_type = "DEL";
-        for (i = 70; str[i] != '<'; i++)
+        for (i = 70; str[i] != '<'; i++) {
             key += str[i];
-//        key[i]='\0';
+        }
     }
     request_type = request_type + delimiter + key;
-    //cout<<request_type;
-//    char chararr_of_buffer[request_type.size() + 1];
-//    strcpy(chararr_of_buffer, request_type.c_str());
     return request_type;
-}
-
-std::string toXML(std::string str)
-{
-std::string response,key="",value="";
-std::string header="<?xml version='1.0' encoding='UTF-8'?>\n";
-std::string msg="<KVMessage type='resp'>\n";
-if(str=="Success"||str=="Error Message"||str=="Does not exist")
-    msg=msg+"<Message>"+str+"</Message>\n";
-else
-{
-    for(int i=0;i<str.length();i++)
-    {
-        if(str[i]!=' ')
-            key+=str[i];
-        else
-        {
-            value=str.substr(i+1);
-            break;
-        }
-
-    }
-
-    msg=msg+"<Key>"+key+"</Key>\n"+"<Value>"+value+"</Value>\n";
-}
-response=header+msg+"</KVMessage>\n";
-return response;
 }
 
 
 int main() {
+//    char y_or_n;
+//    cout << "Delete previously stored key-value pairs? y/n" << std::endl;
+//    cin >> y_or_n;
+//    if (y_or_n == 'y') {
+    system("exec rm -r KVStore/*");
+//    }
+
+
     //Clear response file.
     FILE *fp = fopen("response.txt", "w");
     fclose(fp);
-
 
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -150,11 +187,11 @@ int main() {
 
     //listening on the socket with max no. of waiting connections
     listen(server_fd, 10);
-    std::map<std::string, std::string> KVStore;
+    std::map<std::string, std::string> cacheMap;
     std::string filename = "KVStore_file";
 
     // Read key value store from file
-    restoreFromFile(filename, &KVStore);
+    restoreFromFile(filename, &cacheMap);
 
     // Server runs forever
     while (True) {
@@ -174,21 +211,15 @@ int main() {
         for (int i = 0; i < valread; i++) {
             buffer += (buffer1[i]);
         }
-        std::string buffer2 = xmltoplain(buffer);
+        std::string buffer2 = fromxml(buffer);
 
         char chararr_of_buffer[buffer2.length() + 1];
         strcpy(chararr_of_buffer, buffer2.c_str());
 
-//        cout<<"printing buffer"<<chararr_of_buffer;
-
-//        const char* chararr_of_buffer=xmltoplain(buffer);
-//        cout<<"2!\n"<<chararr_of_buffer;
-
-
         // Extract request type
         std::string request_type = strtok(chararr_of_buffer, delimiter);
         if (debugger_mode) {
-        std::cout << request_type << '\n';
+            std::cout << request_type << '\n';
         }
         // Extract key
         std::string key = strtok(nullptr, delimiter);
@@ -198,39 +229,62 @@ int main() {
         std::string value;
         std::string response;
         std::string error_msg = "Error Message";
+        int add_pair_to_KVStore_flag = 0;
         char return_value[max_buffer_size];
         // Extract value if the request type is PUT
         if (request_type == "PUT") {
+
+            add_pair_to_KVStore_flag = 1;
             value = strtok(nullptr, delimiter);
+            cout << "Value=" << value << "\n";
             if (debugger_mode) {
                 cout << value << '\n';
             }
-            KVStore[key] = value;
+//            cacheMap[key] = value;
+            std::map<std::string, std::string> tmp_map;
+            restoreFromFile(key, &tmp_map);
+            tmp_map[key] = value;
+            dumpToFile(key, &tmp_map);
             response = "Success";
+
+
         } else if (request_type == "DEL") {
-            if (KVStore[key].empty()) {
+            std::map<std::string, std::string> tmp_map;
+            restoreFromFile(key, &tmp_map);
+            if (cacheMap[key].empty() && tmp_map[key].empty()) {
                 response = "Does not exist";
             } else {
-                KVStore.erase(key);
+                tmp_map.erase(key);
+                dumpToFile(key, &tmp_map);
+                cacheMap.erase(key);
                 response = "Success";
             }
 
         } else if (request_type == "GET") {
-            if (KVStore[key].empty()) {
-                response = "Does not exist";
-
+            if (cacheMap[key].empty()) {
+                std::map<std::string, std::string> tmp_map;
+                restoreFromFile(key, &tmp_map);
+                if (tmp_map[key].empty()) {
+                    response = "Does not exist";
+                } else {
+                    cacheMap[key] = tmp_map[key];
+                    response = key + " " + cacheMap[key];
+                    cout << "1" << response;
+                }
             } else {
-                response = key + " " + KVStore[key];
+                cout << "2" << response;
+                response = key + " " + cacheMap[key];
             }
         } else {
             response = error_msg;
         }
-
-        response= toXML(response);
+        cout << std::endl;
+        response = toXML(response);
         strcpy(return_value, response.c_str());
+        cout << return_value;
         send(new_socket, return_value, sizeof(return_value), 0);
-        dumpToFile(filename, &KVStore);
+        if (add_pair_to_KVStore_flag) {
+            putIntoFile(key, value);
+        }
     }
-
-
 }
