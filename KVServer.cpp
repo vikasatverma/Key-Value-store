@@ -51,7 +51,6 @@ int restoreFromFile(std::string &key, std::map<std::string, std::string> *m) {
 
         count++;
     }
-
     if (buf)
         free(buf);
 
@@ -123,7 +122,6 @@ std::string toXML(std::string str) {
 }
 
 
-
 //convert xml format to plain text
 std::string fromxml(std::string str) {
     std::string request_type;
@@ -162,7 +160,7 @@ int main() {
 //    cout << "Delete previously stored key-value pairs? y/n" << std::endl;
 //    cin >> y_or_n;
 //    if (y_or_n == 'y') {
-    system("exec rm -r KVStore/*");
+    system("exec rm -rf KVStore/*");
 //    }
 
 
@@ -233,12 +231,10 @@ int main() {
         char return_value[max_buffer_size];
         // Extract value if the request type is PUT
         if (request_type == "PUT") {
-
             add_pair_to_KVStore_flag = 1;
             value = strtok(nullptr, delimiter);
-            cout << "Value=" << value << "\n";
             if (debugger_mode) {
-                cout << value << '\n';
+                cout << "Value=" << value << "\n";
             }
 //            cacheMap[key] = value;
             std::map<std::string, std::string> tmp_map;
@@ -269,10 +265,10 @@ int main() {
                 } else {
                     cacheMap[key] = tmp_map[key];
                     response = key + " " + cacheMap[key];
-                    cout << "1" << response;
+//                    cout << "1" << response;
                 }
             } else {
-                cout << "2" << response;
+//                cout << "2" << response;
                 response = key + " " + cacheMap[key];
             }
         } else {

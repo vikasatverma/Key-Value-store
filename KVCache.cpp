@@ -42,7 +42,7 @@ public:
 
     int entry_to_replace(int id);
 
-    void viewset(int i);
+    void viewset(int);
 
     void cacheToXML(const std::string &filename);
 };
@@ -68,12 +68,13 @@ std::string KVCache::put(const std::string &key, const std::string &value) {
             cacheMatrix[setID][i] = std::make_pair(key, value);
             entryEmpty[setID][i] = false;
             cacheReferenceMatrix[setID][i] = false;
-            return "Success";
         }
     }
     int entryToReplace = entry_to_replace(setID);
     cacheMatrix[setID][entryToReplace] = std::make_pair(key, value);
     cacheReferenceMatrix[setID][entryToReplace] = false;
+    return "Success";
+
 }
 
 std::string KVCache::del(const std::string &key) {
@@ -81,16 +82,15 @@ std::string KVCache::del(const std::string &key) {
     for (int i = 0; i < sizeOfSet; i++) {
         if (key == cacheMatrix[setID][i].first) {
             entryEmpty[setID][i] = true;
+            return "Success";
         }
     }
+    return "Does not exist";
 }
 
 int KVCache::entry_to_replace(int setID) {
     int i = (lastReplacedEntry[setID] + 1) % sizeOfSet;
 
-//    while (cacheReferenceMatrix[setID][i]){
-//        i = (i+1) % sizeOfSet;
-//    }
     if (i == 0) {
         for (int j = 0; j < sizeOfSet; j++) {
             cacheReferenceMatrix[setID][j] = false;
@@ -104,8 +104,6 @@ int KVCache::entry_to_replace(int setID) {
             }
         }
     }
-
-
     lastReplacedEntry[setID] = i;
     return i;
 }
@@ -113,7 +111,6 @@ int KVCache::entry_to_replace(int setID) {
 void KVCache::viewset(int setID) {
     cout << "\n";
     for (int i = 0; i < sizeOfSet; i++) {
-
         cout << cacheMatrix[setID][i].first << cacheMatrix[setID][i].second << std::endl;
     }
 }
