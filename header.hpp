@@ -4,7 +4,7 @@
 #define numSetsInCache 20
 #define sizeOfSet 7
 
-#define debugger_mode 0
+#define debugger_mode 1
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <cstring>
@@ -16,8 +16,14 @@
 #include <unistd.h>
 #include <sstream>
 #include <fstream>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <array>
 
 
+#define inputFile "batchRun.txt"
 #define True 1
 //#define False 0
 #define delimiter "_||_"
@@ -40,6 +46,20 @@ std::vector<std::string> split(const char *str, char c = ' ') {
         result.emplace_back(begin, str);
     } while (0 != *str++);
 
+    return result;
+}
+
+
+std::string exec(const char *cmd) {
+    std::array<char, 128> buffer{};
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
     return result;
 }
 
