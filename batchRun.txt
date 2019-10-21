@@ -1,8 +1,8 @@
 PUT,key2,value2
 DEL,key3
 PUT,key3,value2
-GET,4
-GET,4
 GET,key3
+GET,4
+GET,key2
 GET,asf sf sf dsf
 PUT,a,b
