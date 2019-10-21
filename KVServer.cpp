@@ -277,7 +277,7 @@ int main() {
         cout << std::endl;
         response = toXML(response);
         strcpy(return_value, response.c_str());
-        cout << return_value;
+        cout << return_value << std::endl;
         send(new_socket, return_value, sizeof(return_value), 0);
         if (add_pair_to_KVStore_flag) {
             putIntoFile(key, value);
