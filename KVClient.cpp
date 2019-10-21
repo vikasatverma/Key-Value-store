@@ -63,7 +63,7 @@ int checkLenght(const std::string &key, const std::string &value = " ") {
 //TODO: Increase capacity of request string to store 256KB
 
 int main() {
-    std::ifstream infile("batchRun.txt");
+    std::ifstream infile(inputFile);
     std::string request_type;
     std::string key;
     std::string value;
@@ -71,7 +71,9 @@ int main() {
     int valread;
     std::string finalRequest;
 
-    for (std::string line; getline(infile, line);) {
+    std::string line;
+    const char *command = "head -n 1 batchRun.txt && tail -n +2 batchRun.txt > batchRun.txt.tmp && mv batchRun.txt.tmp batchRun.txt";
+    while (!(line = exec(command)).empty()) {
         finalRequest = "";
         std::vector<std::string> request = split(line.c_str(), ',');
         if (debugger_mode) {
@@ -79,6 +81,9 @@ int main() {
         }
         request_type = request[0];
         key = request[1];
+        if (key[key.length() - 1] == '\n') {
+            key.resize(key.length() - 1);
+        }
 //        finalRequest.append(request[0]).append(delimiter).append(request[1]);
         if (request[0] == "PUT") {
             if (debugger_mode) {
@@ -147,6 +152,7 @@ int main() {
         fprintf(fp, "\n");
 
         fclose(fp);
+
 
     }
 
