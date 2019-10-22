@@ -1,5 +1,6 @@
 PUT,key2,value2
-DEL,key3
-PUT,key3,value2
-GET,4
+PUT,key3,value3
+GET,key2
 GET,key3
+DEL,key2
+DEL,key3

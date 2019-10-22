@@ -124,7 +124,7 @@ int main() {
 
         valread = read(sockfd, buffer1, max_buffer_size);
         buffer1[valread] = '\0';
-
+        cout<<buffer1<<std::endl;
 
         std::string buffer;
         for (int i = 0; i < valread; i++) {
