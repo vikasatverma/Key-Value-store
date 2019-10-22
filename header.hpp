@@ -1,8 +1,8 @@
 
 #define PORT 8080
 #define threadPoolSize 0
-#define numSetsInCache 0
-#define sizeOfSet 0
+#define numSetsInCache 20
+#define sizeOfSet 20
 
 #define debugger_mode 0
 #include <netdb.h>
@@ -16,10 +16,10 @@
 #include <unistd.h>
 #include <sstream>
 #include <fstream>
-
-
+#include<sys/poll.h>
+#include<sys/ioctl.h>
 #define True 1
-//#define False 0
+#define False 0
 #define delimiter "_||_"
 #define max_key_lenght 256 // 256 Bytes
 #define max_value_lenght (256*1024) // 256 KB
@@ -27,5 +27,20 @@
 
 using std::cout;
 using std::cin;
+
+std::vector<std::string> split(const char *str, char c = ' ') {
+    std::vector<std::string> result;
+
+    do {
+        const char *begin = str;
+
+        while (*str != c && *str)
+            str++;
+
+        result.emplace_back(begin, str);
+    } while (0 != *str++);
+
+    return result;
+}
 
 
