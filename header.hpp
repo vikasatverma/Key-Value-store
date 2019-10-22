@@ -1,3 +1,4 @@
+#pragma once
 
 #define PORT 8080
 #define threadPoolSize 0

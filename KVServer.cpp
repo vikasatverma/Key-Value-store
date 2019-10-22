@@ -1,4 +1,5 @@
 #include "header.hpp"
+#include "KVCache.cpp"
 
 // Used by KVStore function such as dumpToFile and RestoreFromFile to decide which file to refer.
 std::string getFilename(std::string key) {
@@ -31,7 +32,6 @@ int restoreFromFile(std::string &key, std::map<std::string, std::string> *m) {
 
     char *buf = nullptr;
     size_t buflen = 0;
-
     while (getline(&buf, &buflen, fp) > 0) {
         char *nl = strchr(buf, '\n');
         if (nl == nullptr)
@@ -64,15 +64,16 @@ int dumpToFile(std::string &key, std::map<std::string, std::string> *m) {
     std::string fname = getFilename(key);
 
 
-    int count = 0;
-    if (m->empty()) {
-        return 0;
-    }
-
     FILE *fp = fopen(fname.c_str(), "w");
     if (!fp) {
         return -errno;
     }
+    int count = 0;
+    if (m->empty()) {
+        fclose(fp);
+        return 0;
+    }
+
 
     for (std::map<std::string, std::string>::iterator it = m->begin(); it != m->end(); it++) {
         fprintf(fp, "%s=%s\n", it->first.c_str(), it->second.c_str());
@@ -104,6 +105,7 @@ std::string toXML(std::string str) {
     std::string response, key, value;
     std::string header = "<?xml version='1.0' encoding='UTF-8'?>\n";
     std::string msg = "<KVMessage type='resp'>\n";
+    cout << "\nstr is =>" << str << "<=\n" << std::endl;
     if (str == "Success" || str == "Error Message" || str == "Does not exist")
         msg = msg + "<Message>" + str + "</Message>\n";
     else {
@@ -206,7 +208,7 @@ int main(int argc, char *argv[]) {
         close(server_fd);
         exit(-1);
     }
-    std::map<std::string, std::string> cacheMap;
+    KVCache cacheMap;
     std::string filename = "KVStore_file";
     /*************************************************************/
     /* Initialize the pollfd structure                           */
@@ -313,7 +315,6 @@ int main(int argc, char *argv[]) {
                             perror("  read() failed");
                             close_conn = True;
                         }
-                        cout << "hello" << std::endl;
                         break;
                     }
 
@@ -377,7 +378,6 @@ int main(int argc, char *argv[]) {
                         if (debugger_mode) {
                             cout << value << '\n';
                         }
-//            cacheMap[key] = value;
 
                         std::map<std::string, std::string> tmp_map;
 
@@ -390,36 +390,37 @@ int main(int argc, char *argv[]) {
                     } else if (request_type == "DEL") {
                         std::map<std::string, std::string> tmp_map;
                         restoreFromFile(key, &tmp_map);
-                        if (cacheMap[key].empty() && tmp_map[key].empty()) {
+                        if (cacheMap.get(key) == "Does not exist" && tmp_map[key].empty()) {
                             response = "Does not exist";
                         } else {
                             tmp_map.erase(key);
                             dumpToFile(key, &tmp_map);
-                            cacheMap.erase(key);
+                            cacheMap.del(key);
                             response = "Success";
                         }
 
                     } else if (request_type == "GET") {
-                        if (cacheMap[key].empty()) {
+                        if (cacheMap.get(key) == "Does not exist") {
                             std::map<std::string, std::string> tmp_map;
                             restoreFromFile(key, &tmp_map);
                             if (tmp_map[key].empty()) {
                                 response = "Does not exist";
                             } else {
-                                cacheMap[key] = tmp_map[key];
-                                response = key + " " + cacheMap[key];
-                                cout << "1" << response;
+                                cacheMap.get(key) = tmp_map[key];
+                                response = key + " " + cacheMap.get(key);
                             }
                         } else {
-                            cout << "2" << response;
-                            response = key + " " + cacheMap[key];
+                            response = key + " " + cacheMap.get(key);
                         }
                     } else {
                         response = error_msg;
                     }
-                    // cout << std::endl;
                     response = toXML(response);
                     strcpy(return_value, response.c_str());
+
+                    if (debugger_mode) {
+                        cout << "Response: \n" << response;
+                    }
 
                     rc = send(fds[i].fd, return_value, sizeof(return_value), 0);
                     if (rc < 0) {
