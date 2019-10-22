@@ -498,6 +498,7 @@ PUT,key496,val
 PUT,key497,val
 PUT,key498,val
 PUT,key499,val
+PUT,key500,val
 GET,key0
 GET,key1
 GET,key2
@@ -998,6 +999,7 @@ GET,key496
 GET,key497
 GET,key498
 GET,key499
+GET,key500
 DEL,key0
 DEL,key1
 DEL,key2
@@ -1498,6 +1500,7 @@ DEL,key496
 DEL,key497
 DEL,key498
 DEL,key499
+DEL,key500
 GET,key0
 GET,key1
 GET,key2
@@ -1998,3 +2001,4 @@ GET,key496
 GET,key497
 GET,key498
 GET,key499
+GET,key500
