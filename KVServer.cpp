@@ -1,4 +1,45 @@
 #include "header.hpp"
+#include <pthread.h> 
+#include <sys/poll.h>
+#include <sys/time.h>
+#include <signal.h>
+#include <bits/stdc++.h>
+
+using namespace std;
+
+#define NUM_OF_CONN 200
+#define NUM_OF_WORKERS 4
+
+
+pthread_cond_t cond1 = PTHREAD_COND_INITIALIZER;
+
+pthread_mutex_t lock1 = PTHREAD_MUTEX_INITIALIZER; 
+pthread_mutex_t lock2 = PTHREAD_MUTEX_INITIALIZER; 
+// pthread_mutex_t lock2 = PTHREAD_MUTEX_INITIALIZER; 
+pthread_mutex_t lock3 = PTHREAD_MUTEX_INITIALIZER; 
+
+
+//wait syntax
+//pthread_cond_wait(&cond1, &lock1); 
+
+//signal syntax
+//pthread_cond_signal(&cond1); 
+
+//lock1 syntax
+//pthread_mutex_lock(&lock1);
+
+//unlock syntax
+//pthread_mutex_unlock(&lock1);
+
+int worker_thread_id[NUM_OF_WORKERS]={0};
+pthread_t worker_thread[NUM_OF_WORKERS];
+
+int fds[200];
+struct pollfd pollfds[200];
+
+queue< pair<int,string> > client_requests;
+
+map<string, string>
 
 // Used by KVStore function such as dumpToFile and RestoreFromFile to decide which file to refer.
 std::string getFilename(std::string key) {
@@ -51,6 +92,7 @@ int restoreFromFile(std::string &key, std::map<std::string, std::string> *m) {
 
         count++;
     }
+
     if (buf)
         free(buf);
 
@@ -122,6 +164,7 @@ std::string toXML(std::string str) {
 }
 
 
+
 //convert xml format to plain text
 std::string fromxml(std::string str) {
     std::string request_type;
@@ -154,61 +197,19 @@ std::string fromxml(std::string str) {
     return request_type;
 }
 
+void process(string buffer, int thread_id, int new_socket){
 
-int main() {
-//    char y_or_n;
-//    cout << "Delete previously stored key-value pairs? y/n" << std::endl;
-//    cin >> y_or_n;
-//    if (y_or_n == 'y') {
-    system("exec rm -rf KVStore/*");
-//    }
+		pthread_mutex_lock(&lock2);
 
+		cout<<"thread_id is"<<thread_id<<"\n";
+        // if (debugger_mode) {
+        //     cout << buffer1 << "\n";
+        // }
 
-    //Clear response file.
-    FILE *fp = fopen("response.txt", "w");
-    fclose(fp);
-
-    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-
-    struct sockaddr_in address = {address.sin_family = AF_INET,
-            address.sin_port = htons(PORT),
-            address.sin_addr.s_addr = INADDR_ANY};
-    int new_socket, valread;
-    char buffer1[max_buffer_size] = {0};
-    int opt = 1;
-    int addr_len = sizeof(address);
-
-    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
-
-    //binding the address to the socket..address is the ip adress of the machine
-    bind(server_fd, (struct sockaddr *) &address, sizeof(address));
-
-    //listening on the socket with max no. of waiting connections
-    listen(server_fd, 10);
-    std::map<std::string, std::string> cacheMap;
-    std::string filename = "KVStore_file";
-
-    // Read key value store from file
-    restoreFromFile(filename, &cacheMap);
-
-    // Server runs forever
-    while (True) {
-        //accept creates a new socket for comunication
-        new_socket = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &(addr_len));
-        if (debugger_mode) {
-            cout << "connection made with client fd==========>" << new_socket << "\n";
-        }
-        //reading from the socket
-        valread = read(new_socket, buffer1, max_buffer_size);
-        buffer1[valread] = '\0';
-        if (debugger_mode) {
-            cout << buffer1 << "\n";
-        }
-
-        std::string buffer;
-        for (int i = 0; i < valread; i++) {
-            buffer += (buffer1[i]);
-        }
+        // std::string buffer;
+        // for (int i = 0; i < valread; i++) {
+        //     buffer += (buffer1[i]);
+        // }
         std::string buffer2 = fromxml(buffer);
 
         char chararr_of_buffer[buffer2.length() + 1];
@@ -231,10 +232,12 @@ int main() {
         char return_value[max_buffer_size];
         // Extract value if the request type is PUT
         if (request_type == "PUT") {
+
             add_pair_to_KVStore_flag = 1;
             value = strtok(nullptr, delimiter);
+            cout << "Value=" << value << "\n";
             if (debugger_mode) {
-                cout << "Value=" << value << "\n";
+                cout << value << '\n';
             }
 //            cacheMap[key] = value;
             std::map<std::string, std::string> tmp_map;
@@ -244,7 +247,9 @@ int main() {
             response = "Success";
 
 
-        } else if (request_type == "DEL") {
+        }
+
+        else if (request_type == "DEL") {
             std::map<std::string, std::string> tmp_map;
             restoreFromFile(key, &tmp_map);
             if (cacheMap[key].empty() && tmp_map[key].empty()) {
@@ -265,10 +270,10 @@ int main() {
                 } else {
                     cacheMap[key] = tmp_map[key];
                     response = key + " " + cacheMap[key];
-//                    cout << "1" << response;
+                    cout << "1" << response;
                 }
             } else {
-//                cout << "2" << response;
+                cout << "2" << response;
                 response = key + " " + cacheMap[key];
             }
         } else {
@@ -282,5 +287,134 @@ int main() {
         if (add_pair_to_KVStore_flag) {
             putIntoFile(key, value);
         }
-    }
+
+        pthread_mutex_unlock(&lock2);
+
 }
+
+void* thread_fun( void * th_id){
+
+	int thread_id = *((int *)th_id);
+
+
+event:	if(client_requests.empty()){
+		pthread_mutex_lock(&lock1);
+
+		pthread_cond_wait(&cond1, &lock1);
+	
+		pthread_mutex_unlock(&lock1);
+	}
+    
+    pthread_mutex_lock(&lock3);
+    pair<int , string >p = client_requests.front();
+    client_requests.pop();
+    pthread_mutex_unlock(&lock3);
+
+    int newsockfd = p.first;
+    string request = p.second;
+
+    //printf("thread_%d connected to client: %s\n",thread_id, inet_ntoa(clientAddress.sin_addr));
+
+    process(request, thread_id, newsockfd);
+
+    worker_thread_id[thread_id] = 0;
+
+	goto event;    
+	 
+}
+
+
+int main() {
+//    char y_or_n;
+//    cout << "Delete previously stored key-value pairs? y/n" << std::endl;
+//    cin >> y_or_n;
+//    if (y_or_n == 'y') {
+	// try{
+	//     throw system("exec rm -r KVStore/*");
+	// }
+	// catch(...){
+
+	// }
+ //}
+
+    //Clear response file.
+    FILE *fp = fopen("response.txt", "w");
+    fclose(fp);
+
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+    struct sockaddr_in address = {address.sin_family = AF_INET,
+            address.sin_port = htons(PORT),
+            address.sin_addr.s_addr = INADDR_ANY};
+    int new_socket, valread;
+    char buffer1[max_buffer_size] = {0};
+    int opt = 1;
+    int addr_len = sizeof(address);
+
+    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
+
+    //binding the address to the socket..address is the ip adress of the machine
+    bind(server_fd, (struct sockaddr *) &address, sizeof(address));
+
+    //listening on the socket with max no. of waiting connections
+    listen(server_fd, NUM_OF_CONN);
+    std::map<std::string, std::string> cacheMap;
+    std::string filename = "KVStore_file";
+
+    // Read key value store from file
+    restoreFromFile(filename, &cacheMap);
+
+
+    for(int i = 0; i < NUM_OF_WORKERS; i++){
+        if(worker_thread_id[i] == 0){
+            worker_thread_id[i]=1;
+            pthread_create(&worker_thread[i], NULL, thread_fun, &i);
+        }
+    }    
+
+    // Server runs forever
+    int cnt = -1;
+    while (True) {
+        //accept creates a new socket for comunication
+        new_socket = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &(addr_len));
+        if (debugger_mode) {
+            cout << "connection made with client fd==========>" << new_socket << "\n";
+        }
+
+        cnt++;
+        pollfds[cnt].fd = new_socket;
+    	pollfds[cnt].events = POLLIN;   
+        sleep(1);
+
+  		puts("Begin Round");
+
+		poll(pollfds, cnt, 50000);
+ 
+		for(int i=0;i<cnt;i++) {
+			if (pollfds[i].revents & POLLIN){
+				pollfds[i].revents = 0;
+				memset(buffer1,0,max_buffer_size);
+				valread = read(pollfds[i].fd, buffer1, max_buffer_size);
+			    buffer1[valread] = '\0';
+			    std::string buffer;
+        		for (int i = 0; i < valread; i++) {
+            		buffer += (buffer1[i]);
+        		}    
+			    client_requests.push(make_pair(pollfds[i].fd, buffer));
+			    pthread_cond_signal(&cond1);		
+				//puts(buffer);
+
+				}
+			}
+
+    }
+    
+}
+
+        
+
+       			
+ 	  
+//######################################################################################################
+        //reading from the socket
+        //valread = read(new_socket, buffer1, max_buffer_size);
