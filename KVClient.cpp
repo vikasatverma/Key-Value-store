@@ -63,7 +63,7 @@ int checkLenght(const std::string &key, const std::string &value = " ") {
 //TODO: Increase capacity of request string to store 256KB
 
 int main() {
-    std::ifstream infile(inputFile);
+    std::ifstream infile("batchRun.txt");
     std::string request_type;
     std::string key;
     std::string value;
@@ -71,9 +71,7 @@ int main() {
     int valread;
     std::string finalRequest;
 
-    std::string line;
-    const char *command = "head -n 1 batchRun.txt && tail -n +2 batchRun.txt > batchRun.txt.tmp && mv batchRun.txt.tmp batchRun.txt";
-    while (!(line = exec(command)).empty()) {
+    for (std::string line; getline(infile, line);) {
         finalRequest = "";
         std::vector<std::string> request = split(line.c_str(), ',');
         if (debugger_mode) {
@@ -81,9 +79,6 @@ int main() {
         }
         request_type = request[0];
         key = request[1];
-        if (key[key.length() - 1] == '\n') {
-            key.resize(key.length() - 1);
-        }
 //        finalRequest.append(request[0]).append(delimiter).append(request[1]);
         if (request[0] == "PUT") {
             if (debugger_mode) {
@@ -96,10 +91,12 @@ int main() {
             cout << "Unknown Error: Undefined finalRequest type";
             exit(-1);
         }
-
         if (debugger_mode) {
             cout << "\n";
         }
+
+//        sleep(1);
+
         finalRequest = toxml(request_type, key, value);
         if (debugger_mode) {
             cout << finalRequest << "\n";
@@ -107,12 +104,10 @@ int main() {
                     "SENDING DATA "
                     "######################################\n";
         }
-
         struct sockaddr_in serv_addr = {AF_INET, htons(PORT)};
         memset(&serv_addr, 0, sizeof(struct sockaddr_in));
         serv_addr.sin_family = AF_INET;
         serv_addr.sin_port = htons(PORT);
-
         //creating a socket
         int sockfd = socket(AF_INET, SOCK_STREAM, 0);
         if (debugger_mode) {
@@ -122,23 +117,15 @@ int main() {
             printf("\n Socket creation error \n");
             exit(-1);
         }
-
         connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-
         send(sockfd, finalRequest.c_str(), finalRequest.size(), 0);
-
         valread = read(sockfd, buffer1, max_buffer_size);
         buffer1[valread] = '\0';
-
-
         std::string buffer;
         for (int i = 0; i < valread; i++) {
             buffer += (buffer1[i]);
         }
-
-
         std::string buffer2 = xmltoplain(buffer);
-
         char chararr_of_buffer[buffer2.length() + 1];
         strcpy(chararr_of_buffer, buffer2.c_str());
         if (debugger_mode) {
@@ -150,10 +137,6 @@ int main() {
         }
         fprintf(fp, "%s", chararr_of_buffer);
         fprintf(fp, "\n");
-
         fclose(fp);
-
-
     }
-
 }

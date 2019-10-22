@@ -2,7 +2,7 @@
 #define PORT 8080
 #define threadPoolSize 0
 #define numSetsInCache 20
-#define sizeOfSet 7
+#define sizeOfSet 20
 
 #define debugger_mode 1
 #include <netdb.h>
@@ -16,16 +16,10 @@
 #include <unistd.h>
 #include <sstream>
 #include <fstream>
-#include <iostream>
-#include <memory>
-#include <stdexcept>
-#include <string>
-#include <array>
-
-
-#define inputFile "batchRun.txt"
+#include<sys/poll.h>
+#include<sys/ioctl.h>
 #define True 1
-//#define False 0
+#define False 0
 #define delimiter "_||_"
 #define max_key_lenght 256 // 256 Bytes
 #define max_value_lenght (256*1024) // 256 KB
@@ -48,19 +42,4 @@ std::vector<std::string> split(const char *str, char c = ' ') {
 
     return result;
 }
-
-
-std::string exec(const char *cmd) {
-    std::array<char, 128> buffer{};
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if (!pipe) {
-        throw std::runtime_error("popen() failed!");
-    }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-        result += buffer.data();
-    }
-    return result;
-}
-
 

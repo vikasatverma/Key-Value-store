@@ -1,5 +1,7 @@
 #include "header.hpp"
 
+//TODO: use hashes instead of filenumber
+
 int getSetId(std::string key) {
     int fileNumber;
     if (key.length() > 1)
@@ -16,7 +18,6 @@ class KVCache {
     std::pair<std::string, std::string> cacheMatrix[numSetsInCache][sizeOfSet];
     bool cacheReferenceMatrix[numSetsInCache][sizeOfSet]{};
     bool entryEmpty[numSetsInCache][sizeOfSet]{true};
-
     int lastReplacedEntry[numSetsInCache]{-1};
 
 public:
