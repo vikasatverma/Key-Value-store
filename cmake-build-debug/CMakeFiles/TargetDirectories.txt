@@ -1,0 +1,6 @@
+/home/vikas/Documents/Key-Value-store/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/vikas/Documents/Key-Value-store/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/vikas/Documents/Key-Value-store/cmake-build-debug/CMakeFiles/KVStore.dir
+/home/vikas/Documents/Key-Value-store/cmake-build-debug/CMakeFiles/KVServer.dir
+/home/vikas/Documents/Key-Value-store/cmake-build-debug/CMakeFiles/Key_Value_store.dir
+/home/vikas/Documents/Key-Value-store/cmake-build-debug/CMakeFiles/KVClient.dir

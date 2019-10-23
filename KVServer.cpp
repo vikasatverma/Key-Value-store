@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
 	 pthread_t threadpool;
 	 for(int i=0;i<threadPoolSize;i++)
 	 {
-	 	 pthread_create(&threadpool,NULL,check_function,NULL);
+	 	 pthread_create(&threadpool, NULL, reinterpret_cast<void *(*)(void *)>(check_function), NULL);
 	 }
 
     int num_fds = 1, current_size = 0, i, j;
