@@ -12,4 +12,4 @@ add_executable(Key_Value_store
 
 add_executable(KVClient KVClient.cpp)
 add_executable(KVServer KVServer.cpp)
-add_executable(test cmake-build-debug/test.cpp)
+add_executable(KVStore KVStore.cpp)
