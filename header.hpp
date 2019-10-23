@@ -5,7 +5,7 @@
 #define numSetsInCache 20
 #define sizeOfSet 20
 
-#define numOfTotalFDs 200
+#define numOfTotalFDs 20
 #define debugger_mode 0
 #include <netdb.h>
 #include <arpa/inet.h>

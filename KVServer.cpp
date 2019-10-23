@@ -4,6 +4,11 @@
 #include"linked_list.cpp"
  KVCache cacheMap;
  linked_list job_queue;
+ int request_in_queue=0;
+ int active_thread=threadPoolSize;
+ pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+ pthread_cond_t empty_q=PTHREAD_COND_INITIALIZER;
+
     char buffer1[max_buffer_size];
     int len, rc, on = 1;
     int server_fd = -1, new_socket = -1;
@@ -13,16 +18,43 @@
     struct sockaddr_in client_add{};
     struct pollfd fds[numOfTotalFDs];
 
-    void check_function()
-    {
-
-    	cout<<"yes i am working \n";
-    }
+/*void check_function()
+{
+pthread_mutex_lock(&mutex1);
+int i=0;
+i=i+1;
+cout<<i<<std::endl;	
+sleep(1);
+cout<<"hello";
+pthread_mutex_unlock(&mutex1);
+}*/
  void thread_function()
  {
  					//cout<<job_queue.head->request;
-                    std:string buffer=job_queue.head->request;
-                    int fd_index=job_queue.head->fd;
+ 	while(1)
+ 	{	
+ 		//cout<<"active thread"<<active_thread<<std::endl;
+ 		 std:string buffer;
+         int fd_index;
+		
+		 pthread_mutex_lock(&mutex1);
+    		while(request_in_queue==0){
+    		active_thread--;
+			pthread_cond_wait(&empty_q,&mutex1);
+			active_thread++;
+    		}
+    		//cout<<"active thread"<<active_thread<<std::endl;
+    		request_in_queue--;
+    		buffer=job_queue.head->request;
+         	fd_index=job_queue.head->fd;
+         	job_queue.del_job();
+    	pthread_mutex_unlock(&mutex1);
+    	cout<<"active thread"<<active_thread<<std::endl;
+    	if(request_in_queue>active_thread)
+         		pthread_cond_signal(&empty_q);
+
+
+                   
                     std::string buffer2 = fromxml(buffer);
                     //cout<<buffer2<<std::endl;
                     char chararr_of_buffer[buffer2.length() + 1];
@@ -103,7 +135,7 @@
                     }
                     close_conn = True;
 
-                	job_queue.del_job();
+                	
 
                 /*******************************************************/
                 /* If the close_conn flag was turned on, we need       */
@@ -116,6 +148,8 @@
                     fds[fd_index].fd = -1;
                     compress_array = True;
                 }
+
+       }
  }
 int main(int argc, char *argv[]) {
 
@@ -123,10 +157,11 @@ int main(int argc, char *argv[]) {
 //    FILE *fp = fopen("response.txt", "w");
 //    fclose(fp);
 
-	 pthread_t threadpool;
+	 
+	 pthread_t threadpool[threadPoolSize];
 	 for(int i=0;i<threadPoolSize;i++)
 	 {
-	 	 pthread_create(&threadpool,NULL,check_function,NULL);
+	 	 pthread_create(&threadpool[i], NULL, reinterpret_cast<void *(*)(void *)>(thread_function), NULL);
 	 }
 
     int num_fds = 1, current_size = 0, i, j;
@@ -296,9 +331,13 @@ int main(int argc, char *argv[]) {
                     for (int i = 0; i < rc; i++) {
                         buffer += (buffer1[i]);
                     }
+                    pthread_mutex_lock(&mutex1);
                    job_queue.add_job(i,buffer);
+                   request_in_queue+=1;
+                   pthread_mutex_unlock(&mutex1);
                    //cout<<job_queue.head->request;
-                   thread_function();
+                   pthread_cond_signal(&empty_q);
+                   //thread_function();
 
 
             }
