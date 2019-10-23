@@ -1,9 +1,16 @@
 #include "header.hpp"
 
+std::mutex DumpToFile;
+std::mutex restoreFromFile;
+std::mutex mapToFile;
+std::mutex addToFile;
+
+
 class KVStore {
 
 public:
     int dumpToFile(const std::string &filename) {
+        DumpToFile.lock();
         FILE *dumpFilePtr = fopen(filename.c_str(), "w");
         if (!dumpFilePtr) {
             return -errno;
@@ -46,12 +53,12 @@ public:
 
         fclose(dumpFilePtr);
 
-
+        DumpToFile.unlock();
         return 0;
     }
 
     int RestoreFromFile(const std::string &filename) {
-
+        restoreFromFile.lock();
         std::vector<FILE *> fd_vector;
 
         for (int i = 0; i < numSetsInCache; i++) {
@@ -109,6 +116,7 @@ public:
 
             fclose(fd_vector[i]);
         }
+        restoreFromFile.unlock();
         return 0;
     }
 
@@ -161,6 +169,7 @@ int populateMap(std::string &key, std::map<std::string, std::string> *m) {
 
 // Rewrites the whole file in case of a delete
 int storeMapToFile(std::string &key, std::map<std::string, std::string> *m) {
+    mapToFile.lock();
     std::string fname = getFilename(key);
 
 
@@ -181,12 +190,14 @@ int storeMapToFile(std::string &key, std::map<std::string, std::string> *m) {
 
 //    std::cout << count;
     fclose(fp);
+    mapToFile.unlock();
     return count;
 }
 
 
 // Inserts key-value pair incrementally
 int putIntoFile(std::string &key, std::string &value) {
+    addToFile.lock();
     std::string fname = getFilename(key);
 
 
@@ -197,6 +208,7 @@ int putIntoFile(std::string &key, std::string &value) {
     fprintf(fp, "%s=%s\n", key.c_str(), value.c_str());
 
     fclose(fp);
+    addToFile.unlock();
     return 0;
 }
 

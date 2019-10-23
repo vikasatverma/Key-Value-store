@@ -6,7 +6,9 @@
 #define sizeOfSet 20
 
 #define numOfTotalFDs 200
-#define debugger_mode 0
+#define debugger_mode 1
+
+#include <mutex>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <cstring>
@@ -35,6 +37,7 @@
 
 using std::cout;
 using std::cin;
+
 
 std::vector<std::string> split(const char *str, char c = ' ') {
     std::vector<std::string> result;
