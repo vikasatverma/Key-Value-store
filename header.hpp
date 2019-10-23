@@ -5,6 +5,7 @@
 #define numSetsInCache 20
 #define sizeOfSet 20
 
+#define numOfTotalFDs 200
 #define debugger_mode 0
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -95,13 +96,10 @@ std::string getFilename(const std::string &key) {
     return fname;
 }
 
-int getSetId(std::string key) {
+int getSetId(const std::string &key) {
     std::size_t str_hash = std::hash<std::string>{}(key);
     std::cout << str_hash % numSetsInCache << '\n';
 
     int fileNumber = str_hash % numSetsInCache;
-    if (key == "key6") {
-        cout << fileNumber;
-    }
     return fileNumber;
 }

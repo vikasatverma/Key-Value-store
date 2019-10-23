@@ -58,6 +58,7 @@ public:
             std::string fname = "KVStore/" + std::to_string(i);
             FILE *fp = fopen(fname.c_str(), "a");
             if (!fp) {
+                cout << "IO Error";
                 return -errno;
             }
             fd_vector.push_back(fp);

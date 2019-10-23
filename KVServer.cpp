@@ -149,31 +149,31 @@ std::string fromxml(std::string str) {
 
 int main(int argc, char *argv[]) {
 
-    system("exec rm -rf KVStore/*");
-    FILE *fp = fopen("response.txt", "w");
-    fclose(fp);
+//    system("exec rm -rf KVStore/*");
+//    FILE *fp = fopen("response.txt", "w");
+//    fclose(fp);
     char buffer1[max_buffer_size];
     int len, rc, on = 1;
     int server_fd = -1, new_socket = -1;
     int end_server = False, compress_array = False;
     int close_conn;
 
-    struct sockaddr_in client_add;
-    struct pollfd fds[200];
+    struct sockaddr_in client_add{};
+    struct pollfd fds[numOfTotalFDs];
     int num_fds = 1, current_size = 0, i, j;
 
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0) {
-        perror("socket() failed");
+        perror("Network Error: Could not create socket");
         exit(-1);
     }
 
 
-    rc = setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR,
-                    (char *) &on, sizeof(on));
+    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR,
+               (char *) &on, sizeof(on));
 
-    rc = ioctl(server_fd, FIONBIO, (char *) &on);
+    ioctl(server_fd, FIONBIO, (char *) &on);
 
 
     struct sockaddr_in address = {address.sin_family = AF_INET,
@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
     rc = bind(server_fd,
               (struct sockaddr *) &address, sizeof(address));
     if (rc < 0) {
-        perror("bind() failed");
+        perror("Network Error: bind() failed");
         close(server_fd);
         exit(-1);
     }
@@ -190,9 +190,9 @@ int main(int argc, char *argv[]) {
     /*************************************************************/
     /* Set the listen back log                                   */
     /*************************************************************/
-    rc = listen(server_fd, 10);
+    rc = listen(server_fd, numOfTotalFDs);
     if (rc < 0) {
-        perror("listen() failed");
+        perror("Network Error: listen() failed");
         close(server_fd);
         exit(-1);
     }
@@ -255,7 +255,9 @@ int main(int argc, char *argv[]) {
             /* log and end the server.                               */
             /*********************************************************/
             if (fds[i].revents != POLLIN) {
-                printf("  Error! revents = %d\n", fds[i].fd);
+                if (debugger_mode) {
+                    printf("  Error! revents = %d\n", fds[i].fd);
+                }
                 end_server = True;
                 break;
 
@@ -276,7 +278,7 @@ int main(int argc, char *argv[]) {
                     //rc=ioctl(new_socket, FIONBIO ,(char *)&on);
                     if (new_socket < 0) {
                         if (errno != EWOULDBLOCK) {
-                            perror("  accept() failed");
+                            perror("Network Error: accept() failed");
                             end_server = True;
                         }
                         break;
@@ -303,7 +305,7 @@ int main(int argc, char *argv[]) {
 
                     if (rc < 0) {
                         if (errno != EWOULDBLOCK) {
-                            perror("  read() failed");
+                            perror("Network Error: read() failed");
                             close_conn = True;
                         }
                         break;
@@ -316,7 +318,9 @@ int main(int argc, char *argv[]) {
                     /* closed by the client                              */
                     /*****************************************************/
                     if (rc == 0) {
-                        printf("  Connection closed\n");
+                        if (debugger_mode) {
+                            printf("  Connection closed\n");
+                        }
                         close_conn = True;
                         break;
                     }
@@ -388,15 +392,6 @@ int main(int argc, char *argv[]) {
                             cacheMap.del(key);
                             response = "Success";
                         }
-
-                        /**********************************************
-                         * Comment it out
-                         *
-                         ***********************************************/
-                        populateMap(key, &tmp_map);
-                        cout << "\n\n\ncache has ==>" << cacheMap.get(key) << "<==\n\n\n file has==>" << tmp_map[key]
-                             << "<==\n\n\n" << std::endl;
-
 
 
                     } else if (request_type == "GET") {

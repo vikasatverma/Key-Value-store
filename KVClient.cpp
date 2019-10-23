@@ -62,8 +62,25 @@ int checkLenght(const std::string &key, const std::string &value = " ") {
 
 //TODO: Increase capacity of request string to store 256KB
 
-int main() {
-    std::ifstream infile("batchRun.txt");
+int main(int argc, char **argv) {
+
+    int interactiveMode = 1;
+    std::ifstream infile;
+    if (argc == 3) {
+        interactiveMode = 0;
+        std::ifstream infile(argv[1]);
+
+    }
+    if (interactiveMode) {
+        cout << "Enter request in the format\n"
+                "GET,<key>\n"
+                "PUT,<key>,<value>\n"
+                "DEL,<key>\n"
+                "=============================================OR=============================================\n"
+                "Exit the interactive mode and provide two filenames in the commandline in the format\n"
+                "./KVClientExecutable [batchRun.txt] [batchResponse.txt]\n";
+    }
+
     std::string request_type;
     std::string key;
     std::string value;
@@ -71,24 +88,38 @@ int main() {
     int valread;
     std::string finalRequest;
 
-    for (std::string line; getline(infile, line);) {
+    for (std::string line; interactiveMode || getline(infile, line);) {
+        if (interactiveMode) {
+            while (line.empty())
+                getline(cin, line);
+        }
         finalRequest = "";
         std::vector<std::string> request = split(line.c_str(), ',');
         if (debugger_mode) {
             cout << request[0] << "\t" << request[1] << "\t";
         }
+        if (request[0].empty() || request[1].empty()) {
+            perror("Unknown Error: Malformed request");
+            return errno;
+
+        }
         request_type = request[0];
         key = request[1];
 //        finalRequest.append(request[0]).append(delimiter).append(request[1]);
         if (request[0] == "PUT") {
+            if (request.size() != 3 || request[2].empty()) {
+                perror("Unknown Error: Malformed request");
+                return errno;
+            }
             if (debugger_mode) {
                 cout << request[2];
             }
             checkLenght(request[1], request[2]);
             value = request[2];
 //            finalRequest.append(delimiter).append(request[2]);
-        } else if (request[0] != "GET" && request[0] != "DEL") {
-            cout << "Unknown Error: Undefined finalRequest type";
+        } else if (request[0] != "GET" && request[0] != "DEL" && request.size() != 2) {
+            perror("Unknown Error: Malformed request");
+            return errno;
             exit(-1);
         }
         if (debugger_mode) {
@@ -113,10 +144,14 @@ int main() {
             cout << sockfd << "\n";
         }
         if (sockfd < 0) {
-            printf("\n Socket creation error \n");
+            perror("Network Error: Could not create socket");
             exit(-1);
         }
-        connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+        int rc = connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+        if (rc < 0) {
+            perror("Network Error: Could not create socket");
+            return errno;
+        }
         send(sockfd, finalRequest.c_str(), finalRequest.size(), 0);
         valread = read(sockfd, buffer1, max_buffer_size);
         buffer1[valread] = '\0';
@@ -130,12 +165,18 @@ int main() {
         if (debugger_mode) {
             cout << chararr_of_buffer << "\n";
         }
-        FILE *fp = fopen("response.txt", "a");
-        if (!fp) {
-            return -errno;
+
+        if (!interactiveMode) {
+            FILE *fp = fopen(argv[2], "a");
+            if (!fp) {
+                return -errno;
+            }
+            fprintf(fp, "%s", chararr_of_buffer);
+            fprintf(fp, "\n");
+            fclose(fp);
+        } else {
+            cout << chararr_of_buffer << std::endl;
         }
-        fprintf(fp, "%s", chararr_of_buffer);
-        fprintf(fp, "\n");
-        fclose(fp);
+        line.erase();
     }
 }
