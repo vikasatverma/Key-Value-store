@@ -20,15 +20,12 @@
 #include <fstream>
 #include<sys/poll.h>
 #include<sys/ioctl.h>
-<<<<<<< HEAD
-=======
 #include <iostream>
 #include <iomanip>
 #include <functional>
 #include <string>
 #include <unordered_set>
 
->>>>>>> master
 #define True 1
 #define False 0
 #define delimiter "_||_"

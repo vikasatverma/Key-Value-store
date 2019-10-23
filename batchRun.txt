@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-PUT,key2,value2
-PUT,key3,value3
-GET,key2
-GET,key3
-DEL,key2
-DEL,key3
-=======
 PUT,key0,val
 PUT,key1,val
 PUT,key2,val
@@ -2006,4 +1998,3 @@ GET,key496
 GET,key497
 GET,key498
 GET,key499
->>>>>>> master

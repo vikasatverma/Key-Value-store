@@ -155,11 +155,6 @@ int main(int argc, char **argv) {
         send(sockfd, finalRequest.c_str(), finalRequest.size(), 0);
         valread = read(sockfd, buffer1, max_buffer_size);
         buffer1[valread] = '\0';
-<<<<<<< HEAD
-        cout<<buffer1<<std::endl;
-
-=======
->>>>>>> master
         std::string buffer;
         for (int i = 0; i < valread; i++) {
             buffer += (buffer1[i]);

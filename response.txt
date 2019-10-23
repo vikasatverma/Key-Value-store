@@ -1,9 +1,0 @@
-<<<<<<< HEAD
-Success
-Success
-Does not exist
-Does not exist
-Does not exist
-Does not exist
-=======
->>>>>>> master
