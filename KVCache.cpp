@@ -3,12 +3,13 @@
 //TODO: use hashes instead of filenumber
 
 int getSetId(std::string key) {
-    int fileNumber;
-    if (key.length() > 1)
-        fileNumber = int(key[1]) % numSetsInCache;
-    else
-        fileNumber = int(key[0]) % numSetsInCache;
-//    cout<<fileNumber;
+    std::size_t str_hash = std::hash<std::string>{}(key);
+    std::cout << str_hash % numSetsInCache << '\n';
+
+    int fileNumber = str_hash % numSetsInCache;
+    if (key == "key6") {
+        cout << fileNumber;
+    }
     return fileNumber;
 }
 
@@ -51,14 +52,17 @@ public:
 
 std::string KVCache::get(const std::string &key) {
     int setID = getSetId(key);
-
+    int not_found = 1;
     for (int i = 0; i < sizeOfSet; i++) {
-        if (key == cacheMatrix[setID][i].first) {
+        if (key == cacheMatrix[setID][i].first && !entryEmpty[setID][i]) {
             cacheReferenceMatrix[setID][i] = true;
+            not_found = 0;
             return cacheMatrix[setID][i].second;
         }
     }
-    return "Does not exist";
+    if (not_found) {
+        return "Does not exist";
+    }
 }
 
 
@@ -69,10 +73,12 @@ std::string KVCache::put(const std::string &key, const std::string &value) {
             cacheMatrix[setID][i] = std::make_pair(key, value);
             entryEmpty[setID][i] = false;
             cacheReferenceMatrix[setID][i] = false;
+            return "Success";
         }
     }
     int entryToReplace = entry_to_replace(setID);
     cacheMatrix[setID][entryToReplace] = std::make_pair(key, value);
+    entryEmpty[setID][entryToReplace] = false;
     cacheReferenceMatrix[setID][entryToReplace] = false;
     return "Success";
 

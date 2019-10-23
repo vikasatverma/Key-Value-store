@@ -95,7 +95,6 @@ int main() {
             cout << "\n";
         }
 
-//        sleep(1);
 
         finalRequest = toxml(request_type, key, value);
         if (debugger_mode) {

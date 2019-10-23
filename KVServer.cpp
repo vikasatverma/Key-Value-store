@@ -2,14 +2,12 @@
 #include "KVCache.cpp"
 
 // Used by KVStore function such as dumpToFile and RestoreFromFile to decide which file to refer.
-std::string getFilename(std::string key) {
+std::string getFilename(const std::string &key) {
 
-    int fileNumber;
+    std::size_t str_hash = std::hash<std::string>{}(key);
+//    std::cout << str_hash % numSetsInCache << '\n';
 
-    if (key.length() > 1)
-        fileNumber = int(key[1]) % numSetsInCache;
-    else
-        fileNumber = int(key[0]) % numSetsInCache;
+    int fileNumber = str_hash % numSetsInCache;
 
     std::string fname = "KVStore/" + std::to_string(fileNumber);
 
@@ -105,7 +103,9 @@ std::string toXML(std::string str) {
     std::string response, key, value;
     std::string header = "<?xml version='1.0' encoding='UTF-8'?>\n";
     std::string msg = "<KVMessage type='resp'>\n";
-    cout << "\nstr is =>" << str << "<=\n" << std::endl;
+    if (debugger_mode) {
+        cout << "\nstr is =>" << str << "<=\n" << std::endl;
+    }
     if (str == "Success" || str == "Error Message" || str == "Does not exist")
         msg = msg + "<Message>" + str + "</Message>\n";
     else {
@@ -277,8 +277,9 @@ int main(int argc, char *argv[]) {
                 /*******************************************************/
                 /* Listening descriptor is readable.                   */
                 /*******************************************************/
-                printf("  Listening socket is readable\n");
-
+                if (debugger_mode) {
+                    printf("  Listening socket is readable\n");
+                }
 
                 do {
 
@@ -293,15 +294,18 @@ int main(int argc, char *argv[]) {
                         }
                         break;
                     }
-
+                    if (debugger_mode) {
                     printf("  New incoming connection - %d\n", new_socket);
+                    }
                     fds[num_fds].fd = new_socket;
                     fds[num_fds].events = POLLIN;
                     num_fds++;
 
                 } while (new_socket != -1);
             } else {
-                printf("  Descriptor %d is readable\n", fds[i].fd);
+                if (debugger_mode) {
+                    printf("  Descriptor %d is readable\n", fds[i].fd);
+                }
                 close_conn = False;
                 rc = ioctl(fds[i].fd, FIONBIO, (char *) &on);
 
@@ -334,8 +338,9 @@ int main(int argc, char *argv[]) {
                     /* Data was received                                 */
                     /*****************************************************/
                     len = rc;
-                    printf("  %d bytes received\n", len);
-
+                    if (debugger_mode) {
+                        printf("  %d bytes received\n", len);
+                    }
                     /*****************************************************/
                     /* Echo the data back to the client                  */
                     /*****************************************************/
@@ -383,6 +388,7 @@ int main(int argc, char *argv[]) {
 
                         restoreFromFile(key, &tmp_map);
                         tmp_map[key] = value;
+                        cout << "\n\n\n" << value << "\n\n\n";
                         dumpToFile(key, &tmp_map);
                         response = "Success";
 
@@ -399,6 +405,16 @@ int main(int argc, char *argv[]) {
                             response = "Success";
                         }
 
+                        /**********************************************
+                         * Comment it out
+                         *
+                         ***********************************************/
+                        restoreFromFile(key, &tmp_map);
+                        cout << "\n\n\ncache has ==>" << cacheMap.get(key) << "<==\n\n\n file has==>" << tmp_map[key]
+                             << "<==\n\n\n" << std::endl;
+
+
+
                     } else if (request_type == "GET") {
                         if (cacheMap.get(key) == "Does not exist") {
                             std::map<std::string, std::string> tmp_map;
@@ -406,7 +422,7 @@ int main(int argc, char *argv[]) {
                             if (tmp_map[key].empty()) {
                                 response = "Does not exist";
                             } else {
-                                cacheMap.get(key) = tmp_map[key];
+                                cacheMap.put(key, tmp_map[key]);
                                 response = key + " " + cacheMap.get(key);
                             }
                         } else {
