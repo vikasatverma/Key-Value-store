@@ -2,18 +2,6 @@
 
 //TODO: use hashes instead of filenumber
 
-int getSetId(std::string key) {
-    std::size_t str_hash = std::hash<std::string>{}(key);
-    std::cout << str_hash % numSetsInCache << '\n';
-
-    int fileNumber = str_hash % numSetsInCache;
-    if (key == "key6") {
-        cout << fileNumber;
-    }
-    return fileNumber;
-}
-
-
 class KVCache {
 
     std::pair<std::string, std::string> cacheMatrix[numSetsInCache][sizeOfSet];

@@ -1,22 +1,11 @@
 #include "header.hpp"
 #include "KVCache.cpp"
+#include "KVStore.cpp"
 
-// Used by KVStore function such as dumpToFile and RestoreFromFile to decide which file to refer.
-std::string getFilename(const std::string &key) {
-
-    std::size_t str_hash = std::hash<std::string>{}(key);
-//    std::cout << str_hash % numSetsInCache << '\n';
-
-    int fileNumber = str_hash % numSetsInCache;
-
-    std::string fname = "KVStore/" + std::to_string(fileNumber);
-
-    return fname;
-}
 
 // To be used to access key value pairs when not found in cache
 // this will load the required file into the temporary map ie m
-int restoreFromFile(std::string &key, std::map<std::string, std::string> *m) {
+int populateMap(std::string &key, std::map<std::string, std::string> *m) {
     std::string fname = getFilename(key);
     int count = 0;
     if (access(fname.c_str(), R_OK) < 0)
@@ -58,7 +47,7 @@ int restoreFromFile(std::string &key, std::map<std::string, std::string> *m) {
 }
 
 // Rewrites the whole file in case of a delete
-int dumpToFile(std::string &key, std::map<std::string, std::string> *m) {
+int storeMapToFile(std::string &key, std::map<std::string, std::string> *m) {
     std::string fname = getFilename(key);
 
 
@@ -71,7 +60,6 @@ int dumpToFile(std::string &key, std::map<std::string, std::string> *m) {
         fclose(fp);
         return 0;
     }
-
 
     for (std::map<std::string, std::string>::iterator it = m->begin(); it != m->end(); it++) {
         fprintf(fp, "%s=%s\n", it->first.c_str(), it->second.c_str());
@@ -101,8 +89,8 @@ int putIntoFile(std::string &key, std::string &value) {
 
 std::string toXML(std::string str) {
     std::string response, key, value;
-    std::string header = "<?xml version='1.0' encoding='UTF-8'?>\n";
-    std::string msg = "<KVMessage type='resp'>\n";
+    std::string header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    std::string msg = "<KVMessage type=\"resp\">\n";
     if (debugger_mode) {
         cout << "\nstr is =>" << str << "<=\n" << std::endl;
     }
@@ -244,7 +232,6 @@ int main(int argc, char *argv[]) {
         /* Check to see if the 3 minute time out expired.          */
         /***********************************************************/
         if (rc == 0) {
-//            printf("  poll() timed out.\n");
             continue;
         }
 
@@ -372,35 +359,32 @@ int main(int argc, char *argv[]) {
                     std::string value;
                     std::string response;
                     std::string error_msg = "Error Message";
-                    int add_pair_to_KVStore_flag = 0;
                     char return_value[max_buffer_size];
                     // Extract value if the request type is PUT
                     if (request_type == "PUT") {
-
-                        add_pair_to_KVStore_flag = 1;
                         value = strtok(nullptr, delimiter);
-                        cout << "Value=" << value << "\n";
                         if (debugger_mode) {
-                            cout << value << '\n';
+                            cout << "Value=" << value << "\n";
                         }
 
                         std::map<std::string, std::string> tmp_map;
 
-                        restoreFromFile(key, &tmp_map);
-                        tmp_map[key] = value;
-                        cout << "\n\n\n" << value << "\n\n\n";
-                        dumpToFile(key, &tmp_map);
+//                        populateMap(key, &tmp_map);
+//                        tmp_map[key] = value;
+//                        cout << "\n\n\n" << value << "\n\n\n";
+//                        storeMapToFile(key, &tmp_map);
+                        putIntoFile(key, value);
                         response = "Success";
 
 
                     } else if (request_type == "DEL") {
                         std::map<std::string, std::string> tmp_map;
-                        restoreFromFile(key, &tmp_map);
+                        populateMap(key, &tmp_map);
                         if (cacheMap.get(key) == "Does not exist" && tmp_map[key].empty()) {
                             response = "Does not exist";
                         } else {
                             tmp_map.erase(key);
-                            dumpToFile(key, &tmp_map);
+                            storeMapToFile(key, &tmp_map);
                             cacheMap.del(key);
                             response = "Success";
                         }
@@ -409,7 +393,7 @@ int main(int argc, char *argv[]) {
                          * Comment it out
                          *
                          ***********************************************/
-                        restoreFromFile(key, &tmp_map);
+                        populateMap(key, &tmp_map);
                         cout << "\n\n\ncache has ==>" << cacheMap.get(key) << "<==\n\n\n file has==>" << tmp_map[key]
                              << "<==\n\n\n" << std::endl;
 
@@ -418,7 +402,7 @@ int main(int argc, char *argv[]) {
                     } else if (request_type == "GET") {
                         if (cacheMap.get(key) == "Does not exist") {
                             std::map<std::string, std::string> tmp_map;
-                            restoreFromFile(key, &tmp_map);
+                            populateMap(key, &tmp_map);
                             if (tmp_map[key].empty()) {
                                 response = "Does not exist";
                             } else {

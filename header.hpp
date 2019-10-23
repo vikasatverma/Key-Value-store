@@ -81,3 +81,27 @@ namespace std {
         }
     };
 }
+
+// Used by KVStore function such as storeMapToFile and RestoreFromFile to decide which file to refer.
+std::string getFilename(const std::string &key) {
+
+    std::size_t str_hash = std::hash<std::string>{}(key);
+//    std::cout << str_hash % numSetsInCache << '\n';
+
+    int fileNumber = str_hash % numSetsInCache;
+
+    std::string fname = "KVStore/" + std::to_string(fileNumber);
+
+    return fname;
+}
+
+int getSetId(std::string key) {
+    std::size_t str_hash = std::hash<std::string>{}(key);
+    std::cout << str_hash % numSetsInCache << '\n';
+
+    int fileNumber = str_hash % numSetsInCache;
+    if (key == "key6") {
+        cout << fileNumber;
+    }
+    return fileNumber;
+}
