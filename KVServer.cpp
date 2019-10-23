@@ -161,7 +161,9 @@ int main(int argc, char *argv[]) {
 	 pthread_t threadpool[threadPoolSize];
 	 for(int i=0;i<threadPoolSize;i++)
 	 {
+
 	 	 pthread_create(&threadpool[i], NULL, reinterpret_cast<void *(*)(void *)>(thread_function), NULL);
+
 	 }
 
     int num_fds = 1, current_size = 0, i, j;

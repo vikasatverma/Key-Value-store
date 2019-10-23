@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/Key_Value_store.dir/KVClient.cpp.o CMakeFiles/Key_Value_store.dir/KVServer.cpp.o  -o Key_Value_store 

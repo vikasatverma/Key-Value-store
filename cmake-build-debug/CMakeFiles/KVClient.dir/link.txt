@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/KVClient.dir/KVClient.cpp.o  -o KVClient 
