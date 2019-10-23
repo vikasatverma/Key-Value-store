@@ -12,12 +12,19 @@
 
     struct sockaddr_in client_add{};
     struct pollfd fds[numOfTotalFDs];
- void thread_function(int fd_index)
+
+    void check_function()
+    {
+
+    	cout<<"yes i am working \n";
+    }
+ void thread_function()
  {
  					//cout<<job_queue.head->request;
                     std:string buffer=job_queue.head->request;
+                    int fd_index=job_queue.head->fd;
                     std::string buffer2 = fromxml(buffer);
-                    cout<<buffer2<<std::endl;
+                    //cout<<buffer2<<std::endl;
                     char chararr_of_buffer[buffer2.length() + 1];
                     strcpy(chararr_of_buffer, buffer2.c_str());
                     //cout<<chararr_of_buffer;
@@ -96,7 +103,7 @@
                     }
                     close_conn = True;
 
-                
+                	job_queue.del_job();
 
                 /*******************************************************/
                 /* If the close_conn flag was turned on, we need       */
@@ -115,6 +122,12 @@ int main(int argc, char *argv[]) {
 //    system("exec rm -rf KVStore/*");
 //    FILE *fp = fopen("response.txt", "w");
 //    fclose(fp);
+
+	 pthread_t threadpool;
+	 for(int i=0;i<threadPoolSize;i++)
+	 {
+	 	 pthread_create(&threadpool,NULL,check_function,NULL);
+	 }
 
     int num_fds = 1, current_size = 0, i, j;
 
@@ -284,8 +297,8 @@ int main(int argc, char *argv[]) {
                         buffer += (buffer1[i]);
                     }
                    job_queue.add_job(i,buffer);
-                   cout<<job_queue.head->request;
-                   thread_function(i);
+                   //cout<<job_queue.head->request;
+                   thread_function();
 
 
             }

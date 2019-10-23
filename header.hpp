@@ -1,7 +1,7 @@
 #pragma once
 
 #define PORT 8080
-#define threadPoolSize 0
+#define threadPoolSize 5
 #define numSetsInCache 20
 #define sizeOfSet 20
 
@@ -25,7 +25,9 @@
 #include <functional>
 #include <string>
 #include <unordered_set>
-
+#include<stdlib.h>
+#include<stdio.h>
+#include<pthread.h>
 #define True 1
 #define False 0
 #define delimiter "_||_"
