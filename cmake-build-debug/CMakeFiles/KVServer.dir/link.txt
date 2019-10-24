@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/KVServer.dir/KVServer.cpp.o  -o KVServer 

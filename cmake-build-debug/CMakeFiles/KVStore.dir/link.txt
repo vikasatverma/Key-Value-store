@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/KVStore.dir/KVStore.cpp.o  -o KVStore 
