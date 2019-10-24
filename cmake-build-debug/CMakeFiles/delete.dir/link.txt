@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/delete.dir/delete.cpp.o  -o delete 

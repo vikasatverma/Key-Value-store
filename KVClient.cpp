@@ -65,12 +65,11 @@ int checkLenght(const std::string &key, const std::string &value = " ") {
 int main(int argc, char **argv) {
 
     int interactiveMode = 1;
-    std::ifstream infile;
     if (argc == 3) {
         interactiveMode = 0;
-        std::ifstream infile(argv[1]);
 
     }
+    std::ifstream infile(argv[1]);
     if (interactiveMode) {
         cout << "Enter request in the format\n"
                 "GET,<key>\n"
@@ -153,7 +152,10 @@ int main(int argc, char **argv) {
             return errno;
         }
         send(sockfd, finalRequest.c_str(), finalRequest.size(), 0);
+
         valread = read(sockfd, buffer1, max_buffer_size);
+        close(sockfd);
+
         buffer1[valread] = '\0';
         std::string buffer;
         for (int i = 0; i < valread; i++) {

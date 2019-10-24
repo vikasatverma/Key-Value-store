@@ -5,8 +5,10 @@
 #define numSetsInCache 20
 #define sizeOfSet 20
 
-#define numOfTotalFDs 20
-#define debugger_mode 0
+#define numOfTotalFDs 200
+#define debugger_mode 1
+#include <bits/stdc++.h>
+#include <mutex>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <cstring>
@@ -25,9 +27,7 @@
 #include <functional>
 #include <string>
 #include <unordered_set>
-#include<stdlib.h>
-#include<stdio.h>
-#include<pthread.h>
+
 #define True 1
 #define False 0
 #define delimiter "_||_"
@@ -37,6 +37,7 @@
 
 using std::cout;
 using std::cin;
+using namespace std;
 
 std::vector<std::string> split(const char *str, char c = ' ') {
     std::vector<std::string> result;
