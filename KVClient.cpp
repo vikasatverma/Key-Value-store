@@ -117,9 +117,9 @@ int main(int argc, char **argv) {
             checkLenght(request[1], request[2]);
             value = request[2];
 //            finalRequest.append(delimiter).append(request[2]);
-        } else if (request[0] != "GET" && request[0] != "DEL" && request.size() != 2) {
+        } else if (request[0] != "GET" || request[0] != "DEL" || request.size() != 2) {
             perror("Unknown Error: Malformed request");
-            return errno;
+//            return errno;
             exit(-1);
         }
         if (debugger_mode) {
@@ -150,7 +150,8 @@ int main(int argc, char **argv) {
         int rc = connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
         if (rc < 0) {
             perror("Network Error: Could not create socket");
-            return errno;
+            exit(-1);
+            //            return errno;
         }
         send(sockfd, finalRequest.c_str(), finalRequest.size(), 0);
 
@@ -172,7 +173,9 @@ int main(int argc, char **argv) {
         if (!interactiveMode) {
             FILE *fp = fopen(argv[2], "a");
             if (!fp) {
-                return -errno;
+//                return -errno;
+                perror("File open error");
+                exit(-1);
             }
             fprintf(fp, "%s", chararr_of_buffer);
             fprintf(fp, "\n");
