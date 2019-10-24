@@ -84,27 +84,29 @@ void HandleRequest(int new_socket, int valread, const char *buffer1) {
     if (debugger_mode) {
         cout << "Response: \n" << response;
     }
-    cout << return_value << std::endl;
+//    cout << return_value << std::endl;
     send(new_socket, return_value, sizeof(return_value), 0);
 //        close(new_socket);
 }
 
 int main(int argc, char *argv[]) {
 
-    cout << "To dump the KVStore key value pairs to a file, use command:\n"
-            "./[ServerExecutable] dumpToFile [filename]\n"
-            "==================================OR==================================\n"
-            "To restore the key value pairs from a file to the, use command:\n"
-            "./[ServerExecutable] restoreFromFile [filename]\n";
+    cout << "=====================================================================\n"
+            "|  To dump the KVStore key value pairs to a file, use command:      |\n"
+            "|  ./[ServerExecutable] dumpToFile [filename]                       |\n"
+            "==================================OR=================================\n"
+            "|  To restore the key value pairs from a file to the, use command:  |\n"
+            "|  ./[ServerExecutable] restoreFromFile [filename]                  |\n"
+            "=====================================================================\n";
 
     KVStore kvStore;
     if (argc == 3) {
-        if (strcmp(argv[1], "restoreFromFile") != 0) {
+        if (strcmp(argv[1], "restoreFromFile") == 0) {
             kvStore.RestoreFromFile(argv[2]);
-            cout << "Restore from file " << argv[1] << " successful." << std::endl;
-        } else if (strcmp(argv[1], "dumpToFile") != 0) {
+            cout << "Restore from file " << argv[2] << " successful." << std::endl;
+        } else if (strcmp(argv[1], "dumpToFile") == 0) {
             kvStore.dumpToFile(argv[2]);
-            cout << "Dump to file " << argv[1] << " successful." << std::endl;
+            cout << "Dump to file " << argv[2] << " successful." << std::endl;
         }
     }
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -138,8 +140,8 @@ int main(int argc, char *argv[]) {
     while (True) {
         //accept creates a new socket for comunication
         new_socket = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &(addr_len));
-        cout << ++i;
         if (debugger_mode) {
+            cout << ++i;
             cout << "connection made with client fd==========>" << new_socket << "\n";
         }
         //reading from the socket
