@@ -119,8 +119,9 @@ int main(int argc, char **argv) {
             checkLenght(request[1], request[2]);
             value = request[2];
 //            finalRequest.append(delimiter).append(request[2]);
-        } else if (request[0] != "GET" || request[0] != "DEL" || request.size() != 2) {
-            perror("Unknown Error: Malformed request");
+        } else if ((request[0] != "GET" && request[0] != "DEL") || request.size() != 2) {
+            perror("XML Error: Received unparseable message");
+            line.erase();
 //            return errno;
 //            exit(-1);
             continue;
