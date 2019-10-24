@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
                 "DEL,<key>\n"
                 "=============================================OR=============================================\n"
                 "Exit the interactive mode and provide two filenames in the commandline in the format\n"
-                "./KVClientExecutable [batchRun.txt] [batchResponse.txt]\n";
+                "./KVClient [batchRun.txt] [batchResponse.txt]\n";
     }
 
     std::string request_type;
@@ -98,9 +98,10 @@ int main(int argc, char **argv) {
         if (debugger_mode) {
             cout << request[0] << "\t" << request[1] << "\t";
         }
-        if (request[0].empty() || request[1].empty()) {
-            perror("Unknown Error: Malformed request");
-            return errno;
+        if (request.size() < 2 || request[0].empty() || request[1].empty()) {
+            perror("XML Error: Received unparseable message");
+            line.erase();
+            continue;
 
         }
         request_type = request[0];
@@ -108,8 +109,9 @@ int main(int argc, char **argv) {
 //        finalRequest.append(request[0]).append(delimiter).append(request[1]);
         if (request[0] == "PUT") {
             if (request.size() != 3 || request[2].empty()) {
-                perror("Unknown Error: Malformed request");
-                return errno;
+                perror("XML Error: Received unparseable message");
+                line.erase();
+                continue;
             }
             if (debugger_mode) {
                 cout << request[2];
@@ -120,7 +122,8 @@ int main(int argc, char **argv) {
         } else if (request[0] != "GET" || request[0] != "DEL" || request.size() != 2) {
             perror("Unknown Error: Malformed request");
 //            return errno;
-            exit(-1);
+//            exit(-1);
+            continue;
         }
         if (debugger_mode) {
             cout << "\n";

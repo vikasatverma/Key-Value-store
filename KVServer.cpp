@@ -2,8 +2,6 @@
 #include "KVCache.cpp"
 #include "KVStore.cpp"
 
-#include <queue>
-
 KVCache cacheMap;
 
 void HandleRequest(int new_socket, int valread, const char *buffer1) {
@@ -93,10 +91,10 @@ int main(int argc, char *argv[]) {
 
     cout << "============================================================================\n"
             "|  To dump the KVStore key value pairs to a file, use command:              |\n"
-            "|  ./[ServerExecutable] dumpToFile [filename]                               |\n"
+            "|  ./KVServer dumpToFile [filename]                                         |\n"
             "======================================OR====================================\n"
             "|  To restore the key value pairs from a file to the KVStore, use command:  |\n"
-            "|  ./[ServerExecutable] restoreFromFile [filename]                          |\n"
+            "|  ./KVServer restoreFromFile [filename]                                    |\n"
             "============================================================================\n";
 
     KVStore kvStore;
