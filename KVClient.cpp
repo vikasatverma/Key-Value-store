@@ -152,7 +152,10 @@ int main(int argc, char **argv) {
             return errno;
         }
         send(sockfd, finalRequest.c_str(), finalRequest.size(), 0);
+
         valread = read(sockfd, buffer1, max_buffer_size);
+        close(sockfd);
+
         buffer1[valread] = '\0';
         std::string buffer;
         for (int i = 0; i < valread; i++) {
