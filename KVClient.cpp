@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
                 "DEL,<key>\n"
                 "=============================================OR=============================================\n"
                 "Exit the interactive mode and provide two filenames in the commandline in the format\n"
-                "./KVClient [batchRun.txt] [batchResponse.txt]\n";
+                "./KVClient [inputfile] [outputfile]\n";
     }
 
     std::string request_type;
