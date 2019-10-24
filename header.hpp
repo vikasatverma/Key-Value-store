@@ -1,10 +1,6 @@
 #pragma once
 
-#define PORT 8080
-#define threadPoolSize 0
-#define numSetsInCache 20
-#define sizeOfSet 20
-
+#include "config.h"
 #define numOfTotalFDs 200
 #define debugger_mode 0
 
