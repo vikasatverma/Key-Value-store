@@ -1,17 +1,18 @@
 #include "header.hpp"
 
 // to convert the plain text to xml format
+// to convert the plain text to xml format
 std::string toxml(std::string msg_type, std::string key, std::string value = "") {
 
-    std::string request = "<?xml version='1.0' encoding='UTF-8'?>\n";
+    std::string request = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
     if (msg_type == "GET") {
-        msg_type = "<KVMessage type='getreq'>\n";
+        msg_type = "<KVMessage type=\"getreq\">\n";
         key = "<Key>" + key + "</Key>\n";
     }
     if (msg_type == "PUT") {
 
-        msg_type = "<KVMessage type='putreq'>\n";
+        msg_type = "<KVMessage type=\"putreq\">\n";
         key = "<key>" + key + "</Key>\n";
         value = "<Value>" + value + "</Value>\n";
         key = key + value;
@@ -19,7 +20,7 @@ std::string toxml(std::string msg_type, std::string key, std::string value = "")
     }
     if (msg_type == "DEL") {
 
-        msg_type = "<KVMessage type='delreq'>\n";
+        msg_type = "<KVMessage type=\"delreq\">\n";
         key = "<Key>" + key + "</Key>\n";
     }
 

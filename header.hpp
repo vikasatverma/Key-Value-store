@@ -101,7 +101,7 @@ std::string getFilename(const std::string &key) {
 
 int getSetId(const std::string &key) {
     std::size_t str_hash = std::hash<std::string>{}(key);
-    std::cout << str_hash % numSetsInCache << '\n';
+//    std::cout << str_hash % numSetsInCache << '\n';
 
     int fileNumber = str_hash % numSetsInCache;
     return fileNumber;

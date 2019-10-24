@@ -13,6 +13,8 @@ public:
         DumpToFile.lock();
         FILE *dumpFilePtr = fopen(filename.c_str(), "w");
         if (!dumpFilePtr) {
+            DumpToFile.unlock();
+
             return -errno;
         }
         fprintf(dumpFilePtr, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<KVStore>\n");
@@ -66,6 +68,8 @@ public:
             FILE *fp = fopen(fname.c_str(), "a");
             if (!fp) {
                 cout << "IO Error";
+                restoreFromFile.unlock();
+
                 return -errno;
             }
             fd_vector.push_back(fp);
@@ -73,6 +77,8 @@ public:
 
         FILE *sourceFile = fopen(filename.c_str(), "r");
         if (!sourceFile) {
+            restoreFromFile.unlock();
+
             return -errno;
         }
         char *buf = nullptr;
@@ -180,6 +186,8 @@ int storeMapToFile(std::string &key, std::map<std::string, std::string> *m) {
     int count = 0;
     if (m->empty()) {
         fclose(fp);
+        mapToFile.unlock();
+
         return 0;
     }
 
@@ -203,6 +211,7 @@ int putIntoFile(std::string &key, std::string &value) {
 
     FILE *fp = fopen(fname.c_str(), "a");
     if (!fp) {
+        addToFile.unlock();
         return -errno;
     }
     fprintf(fp, "%s=%s\n", key.c_str(), value.c_str());

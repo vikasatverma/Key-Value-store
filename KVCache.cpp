@@ -111,7 +111,7 @@ void KVCache::viewset(int setID) {
 }
 
 void KVCache::cacheToXML(const std::string &filename) {
-    std::string cacheXML = "<?xml version='1.0' encoding='UTF-8'?>\n";
+    std::string cacheXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     cacheXML += "<KVCache>\n";
 
     for (int i = 0; i < numSetsInCache; i++) {
