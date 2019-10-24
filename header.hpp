@@ -6,7 +6,7 @@
 #define sizeOfSet 20
 
 #define numOfTotalFDs 200
-#define debugger_mode 1
+#define debugger_mode 0
 
 #include <mutex>
 #include <netdb.h>

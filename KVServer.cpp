@@ -4,7 +4,9 @@
 
 #include <queue>
 
-void HandleRequest(int new_socket, int valread, const char *buffer1, KVCache &cacheMap) {
+KVCache cacheMap;
+
+void HandleRequest(int new_socket, int valread, const char *buffer1) {
     if (debugger_mode) {
         cout << buffer1 << "\n";
 
@@ -89,9 +91,22 @@ void HandleRequest(int new_socket, int valread, const char *buffer1, KVCache &ca
 
 int main(int argc, char *argv[]) {
 
-//    system("exec rm -rf KVStore/*");
-//    FILE *fp = fopen("response.txt", "w");
-//    fclose(fp);
+    cout << "To dump the KVStore key value pairs to a file, use command:\n"
+            "./[ServerExecutable] dumpToFile [filename]\n"
+            "==================================OR==================================\n"
+            "To restore the key value pairs from a file to the, use command:\n"
+            "./[ServerExecutable] restoreFromFile [filename]\n";
+
+    KVStore kvStore;
+    if (argc == 3) {
+        if (strcmp(argv[1], "restoreFromFile") != 0) {
+            kvStore.RestoreFromFile(argv[2]);
+            cout << "Restore from file " << argv[1] << " successful." << std::endl;
+        } else if (strcmp(argv[1], "dumpToFile") != 0) {
+            kvStore.dumpToFile(argv[2]);
+            cout << "Dump to file " << argv[1] << " successful." << std::endl;
+        }
+    }
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
 
@@ -117,7 +132,6 @@ int main(int argc, char *argv[]) {
         close(server_fd);
         exit(-1);
     }
-    KVCache cacheMap;
 
     int i = 0;
     // Server runs forever
@@ -131,7 +145,7 @@ int main(int argc, char *argv[]) {
         //reading from the socket
         valread = read(new_socket, buffer1, max_buffer_size);
         buffer1[valread] = '\0';
-        HandleRequest(new_socket, valread, buffer1, cacheMap);
+        HandleRequest(new_socket, valread, buffer1);
 
 
     }
