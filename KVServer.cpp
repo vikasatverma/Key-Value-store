@@ -20,20 +20,20 @@ public:
 
     }
 
-    static void dummy(int x, int id) {
-//        if(id==4)
-//            std::this_thread::sleep_for(std::chrono::seconds(1));
-//        while (x--)
-//        cout<<id<<" OYE!\n";
-
-        std::thread::id this_id = std::this_thread::get_id();
-
-//        g_display_mutex.lock();
-        std::cout << "thread " << this_id << " sleeping...\n";
-//        g_display_mutex.unlock();
-
-        std::this_thread::sleep_for(std::chrono::seconds(5));
-    }
+//    static void dummy(int x, int id) {
+////        if(id==4)
+////            std::this_thread::sleep_for(std::chrono::seconds(1));
+////        while (x--)
+////        cout<<id<<" OYE!\n";
+//
+//        std::thread::id this_id = std::this_thread::get_id();
+//
+////        g_display_mutex.lock();
+//        std::cout << "thread " << this_id << " sleeping...\n";
+////        g_display_mutex.unlock();
+//
+//        std::this_thread::sleep_for(std::chrono::seconds(5));
+//    }
 
     virtual ~Node() = default;
 
@@ -210,6 +210,9 @@ int main(int argc, char *argv[]) {
             "======================================OR====================================\n"
             "|  To restore the key value pairs from a file to the KVStore, use command:  |\n"
             "|  ./KVServer restoreFromFile [filename]                                    |\n"
+            "============================================================================\n"
+            "|  To change the port of the KVServer, use command:                         |\n"
+            "|  ./KVServer port [port_number]                                            |\n"
             "============================================================================\n";
 
     KVStore kvStore;
@@ -220,9 +223,19 @@ int main(int argc, char *argv[]) {
         } else if (strcmp(argv[1], "dumpToFile") == 0) {
             kvStore.dumpToFile(argv[2]);
             cout << "Dump to file " << argv[2] << " successful." << std::endl;
+        } else if (strcmp(argv[1], "port") == 0) {
+            std::istringstream iss(argv[2]);
+            int val;
+            if (iss >> val) {
+                // Conversion successful
+            }
+            PORT = val;
+            cout << "Will run on port " << argv[2] << "." << std::endl;
         }
+
+
     }
 
     Node node;
-    node.run();
+    Node::run();
 }
