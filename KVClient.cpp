@@ -66,11 +66,22 @@ int checkLenght(const std::string &key, const std::string &value = " ") {
 int main(int argc, char **argv) {
 
     int interactiveMode = 1;
-    if (argc == 3) {
+//    cout<<argv[1];
+
+    if (strcmp(argv[1], "port") == 0) {
+        std::istringstream iss(argv[2]);
+        int val;
+        if (iss >> val) {
+            // Conversion successful
+        }
+        PORT = val;
+        cout << "Will run on port " << argv[2] << "." << std::endl;
+    }
+    if (argc == 5) {
         interactiveMode = 0;
 
     }
-    std::ifstream infile(argv[1]);
+    std::ifstream infile(argv[3]);
     if (interactiveMode) {
         cout << "Enter request in the format\n"
                 "GET,<key>\n"
@@ -93,6 +104,8 @@ int main(int argc, char **argv) {
             while (line.empty())
                 getline(cin, line);
         }
+
+
         finalRequest = "";
         std::vector<std::string> request = split(line.c_str(), ',');
         if (debugger_mode) {
@@ -175,7 +188,7 @@ int main(int argc, char **argv) {
         }
 
         if (!interactiveMode) {
-            FILE *fp = fopen(argv[2], "a");
+            FILE *fp = fopen(argv[4], "a");
             if (!fp) {
 //                return -errno;
                 perror("File open error");
