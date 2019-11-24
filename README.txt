@@ -72,3 +72,13 @@ STEP4: CLEAN THE PROJECT(OBJECT FILES AND EXCECUTABLE FILES)
 Command: make clean
 
 https://github.com/mitul227/Chord-DHT
+
+
+
+Server Compilation:
+g++ KVServer.cpp -lcrypto -pthread -o KVServer
+./KVServer
+
+Client:
+g++ KVClient.cpp 
+./KVClient port <port>
