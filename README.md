@@ -1,10 +1,3 @@
-TEAM MEMBERS
---------------
-
-1.Vikas Verma(193059003)
-
-2.Apaar Bansal(193050035)
-
 HOW TO EXECUTE THE KVSTORE
 ------------
 
